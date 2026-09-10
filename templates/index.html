@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="On-device phenotype extraction and explainable rare-disease profile ranking for clinical review.">
+  <title>Clinical Analysis — Phenotype Decision Support</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='polish.css') }}">
+</head>
+<body>
+  <div class="app-frame">
+    <header class="app-header">
+      <a class="brand" href="#top" aria-label="Clinical Analysis home">
+        <span class="brand-mark" aria-hidden="true">CA</span>
+        <span class="brand-copy">
+          <strong>Clinical Analysis</strong>
+          <small>Phenotype decision support</small>
+        </span>
+      </a>
+
+      <nav class="main-nav" aria-label="Primary navigation">
+        <a class="active" href="#top">What it does</a>
+        <a href="#analysis">Use it</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#tools">More tools</a>
+      </nav>
+
+      <div class="header-right">
+        <span id="health" class="status" role="status" aria-live="polite">
+          <i aria-hidden="true"></i>
+          Checking datasets…
+        </span>
+        <a class="new-case" href="#analysis">Workspace <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+
+    <nav class="mobile-tabs" aria-label="Page sections">
+      <a class="active" href="#top"><b>01</b><span>What it does</span></a>
+      <a href="#analysis"><b>02</b><span>Use it</span></a>
+      <a href="#how-it-works"><b>03</b><span>How it works</span></a>
+      <a href="#tools"><b>04</b><span>More tools</span></a>
+    </nav>
+
+    <section id="top" class="hero">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="hero-kicker"><span>01</span> Designed for clinical review</p>
+          <h1><span>Connect the</span><span>clinical clues.</span></h1>
+          <p class="hero-lede">A workspace for exploring rare-disease possibilities. Turn a clinical note into a structured set of findings, compare candidate profiles, and see the evidence behind each match.</p>
+          <div class="hero-actions">
+            <button class="hero-primary" type="button" data-demo="connective">Try a sample case <span aria-hidden="true">↗</span></button>
+            <a class="hero-secondary" href="#analysis">Open workspace <span aria-hidden="true">→</span></a>
+          </div>
+          <p class="hero-boundary"><strong>Decision support, not diagnosis.</strong> Results are candidate profiles for a qualified reviewer to investigate.</p>
+        </div>
+
+        <div id="signal-board" class="signal-board" aria-label="Illustrative clinical note and standardized findings">
+          <div class="board-header">
+            <span><i></i> THE CASE FILE</span>
+            <span>Fictional example / 001</span>
+          </div>
+
+          <div class="case-note">
+            <span class="case-caption">01 / THE CLINICAL NOTE</span>
+            <p>“Patient has <mark>joint pain</mark>,<br><mark>hypertelorism</mark> and <mark>skin laxity</mark>.”</p>
+            <div class="case-connector" aria-hidden="true">↓</div>
+          </div>
+          <div class="case-findings">
+            <span class="case-caption">02 / A SHARED CLINICAL LANGUAGE</span>
+            <div><strong>Arthralgia</strong><code>HP:0002829</code><b>✓</b></div>
+            <div><strong>Hypertelorism</strong><code>HP:0000316</code><b>✓</b></div>
+            <div><strong>Cutis laxa</strong><code>HP:0000973</code><b>✓</b></div>
+          </div>
+
+          <div class="board-footer">
+            <span>03 / Compare candidate profiles</span>
+            <button type="button" data-demo="connective">Explore this case ↗</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-strip" aria-label="Dataset summary">
+        <span><small>HPO ontology</small><strong data-count="20412">20,412</strong> terms</span>
+        <span><small>Disease data</small><strong data-count="13010">13,010</strong> profiles</span>
+        <span><small>Patient notes</small><strong data-count="0">0</strong> uploaded</span>
+        <span class="strip-line" aria-hidden="true"></span>
+        <a href="#analysis">Open analyzer <b>↓</b></a>
+      </div>
+    </section>
+
+    <div class="app-layout">
+      <aside class="sidebar">
+        <div class="side-section">
+          <p class="side-label">Workspace</p>
+          <a class="side-link active" href="#analysis">
+            <span class="side-icon" aria-hidden="true">⌁</span>
+            New analysis
+            <kbd>N</kbd>
+          </a>
+          <a class="side-link" href="#phenotype-heading">
+            <span class="side-icon" aria-hidden="true">◇</span>
+            Phenotype review
+          </a>
+          <a class="side-link" href="#differential-heading">
+            <span class="side-icon" aria-hidden="true">≋</span>
+            Candidate profiles
+          </a>
+        </div>
+
+        <div class="side-section dataset-section">
+          <p class="side-label">Local index</p>
+          <div class="dataset-row">
+            <span>HPO ontology</span>
+            <strong>20,412</strong>
+          </div>
+          <div class="dataset-row">
+            <span>Disease profiles</span>
+            <strong>13,010</strong>
+          </div>
+          <div class="index-state"><i></i> Index ready</div>
+        </div>
+
+        <div class="side-footer">
+          <span>Local only</span>
+          <p>Clinical text is processed on this machine and is never uploaded.</p>
+        </div>
+      </aside>
+
+      <main id="analysis" class="content">
+        <header class="content-header">
+          <div>
+            <p class="breadcrumb"><span>Workspace</span><i>/</i>New case</p>
+            <h2>Your next investigation.</h2>
+            <p>Start with a note. Follow the evidence.</p>
+          </div>
+          <div class="content-actions">
+            <span class="privacy-state"><i></i> On-device</span>
+            <button id="export-button" class="secondary-button" type="button" hidden>
+              Review brief <span aria-hidden="true">↗</span>
+            </button>
+          </div>
+        </header>
+
+        <div class="demo-shelf">
+          <div><span class="section-label">A place to start</span><strong>Explore a fictional case</strong></div>
+          <button type="button" data-demo="connective"><span>01</span> Connective tissue <b>↗</b></button>
+          <button type="button" data-demo="neuro"><span>02</span> Neurological <b>↗</b></button>
+          <button type="button" data-demo="skeletal"><span>03</span> Skeletal <b>↗</b></button>
+        </div>
+        <nav class="workflow" aria-label="Analysis progress">
+          <a href="#clinical-text" aria-current="step"><b>1</b><span>Describe the case</span></a>
+          <a href="#phenotype-heading"><b>2</b><span>Review the findings</span></a>
+          <a href="#differential-heading"><b>3</b><span>Compare the evidence</span></a>
+        </nav>
+        <p id="case-status" class="case-status" role="status" aria-live="polite">Your note stays on this computer. Try an example or enter your own findings.</p>
+        <div id="demo-confirm" class="demo-confirm" hidden><p>Load this example in place of your current note?</p><button id="demo-replace" type="button">Load example</button><button id="demo-cancel" type="button">Keep my note</button></div>
+
+        <section class="workspace" aria-label="Clinical analysis tools" aria-busy="false">
+          <article class="panel input-panel">
+            <header class="panel-heading">
+              <div>
+                <p class="section-label">01 / Input</p>
+                <h2>Patient presentation</h2>
+              </div>
+              <span class="panel-state">Draft</span>
+            </header>
+
+            <div class="field primary-field">
+              <div class="label-row">
+                <label for="clinical-text">Clinical note</label>
+                <span id="note-count">0 / 10,000</span>
+              </div>
+              <textarea id="clinical-text" maxlength="10000" autocomplete="off" placeholder="Describe the patient presentation…"></textarea>
+              <p class="field-hint">Describe observed findings, separated by commas or sentences.</p>
+              <details class="inline-help"><summary>What makes a useful note?</summary><p>Use specific observations such as “joint pain, skin laxity, hypertelorism.” The extractor attempts to filter phrases like “no seizures” or “possible ataxia”; always review the extracted terms.</p></details>
+            </div>
+
+            <div class="field-grid">
+              <div class="field">
+                <label for="additional-text">Add finding</label>
+                <input id="additional-text" type="text" maxlength="10000" autocomplete="off" placeholder="e.g. developmental delay">
+              </div>
+              <div class="field">
+                <label for="absent-text">Mark absent</label>
+                <input id="absent-text" type="text" maxlength="10000" autocomplete="off" placeholder="e.g. seizures">
+              </div>
+            </div>
+
+            <details class="context-card">
+              <summary>
+                <span>Patient context</span>
+                <small>Optional signals</small>
+              </summary>
+              <div class="context-content">
+                <div class="context-grid">
+                  <div class="field">
+                    <label for="patient-age">Age in years</label>
+                    <input id="patient-age" type="number" min="0" max="120" step="0.1" placeholder="34">
+                  </div>
+                  <div class="field">
+                    <label for="patient-sex">Sex</label>
+                    <select id="patient-sex">
+                      <option value="unknown">Unknown</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
+                </div>
+                <label class="question">
+                  <input id="refractory" type="checkbox">
+                  <span>
+                    <strong>Persistent presentation</strong>
+                    Symptoms continued despite treatment for a suspected common cause
+                  </span>
+                </label>
+              </div>
+            </details>
+
+            <div class="action-row">
+              <button id="analyze-button" class="primary-button" type="button" title="Analyze note (Ctrl/Command + Enter)">
+                <span>Find candidate profiles</span>
+                <span class="run-icon" aria-hidden="true">↗</span>
+                <kbd>⌘ ↵</kbd>
+              </button>
+              <span class="action-note">Runs on this computer</span>
+            </div>
+
+            <section class="phenotype-section" aria-labelledby="phenotype-heading">
+              <div class="subsection-heading">
+                <div>
+                  <p class="section-label">02 / Validate</p>
+                  <h3 id="phenotype-heading">Extracted phenotypes</h3>
+                </div>
+                <span class="review-hint">Remove incorrect matches ×</span>
+              </div>
+              <p class="field-hint">HPO (Human Phenotype Ontology) gives each finding a standard name and ID.</p>
+              <div id="term-results" class="results empty" aria-live="polite">
+                <div class="empty-state compact">
+                  <span class="empty-code" aria-hidden="true">—</span>
+                  <span>No phenotype terms extracted yet.</span>
+                </div>
+              </div>
+            </section>
+          </article>
+
+          <article class="panel results-panel">
+            <header class="panel-heading">
+              <div>
+                <p class="section-label accent">03 / Inspect</p>
+                <h2 id="differential-heading">Candidate profiles</h2>
+              </div>
+              <span class="panel-state waiting">Waiting</span>
+            </header>
+            <div id="result-tools" class="result-tools" hidden>
+              <div class="view-switch" role="group" aria-label="Results view"><button id="view-list" type="button" aria-pressed="true">Ranked list</button><button id="view-compare" type="button" aria-pressed="false">Compare top 3</button></div>
+              <details class="inline-help"><summary>How are scores calculated?</summary><p>Scores measure weighted overlap with annotated phenotype profiles. They are not the probability of having a disease. Higher means closer overlap; frequency weights can push scores above 100. Rare findings carry more weight; absent findings and context can reduce a score. This heuristic prototype has not been clinically validated.</p></details>
+            </div>
+            <div id="comparison" class="comparison" hidden></div>
+            <div id="signals" class="signals" hidden></div>
+            <div id="disease-results" class="results disease-list empty" aria-live="polite">
+              <div class="empty-state">
+                <span class="empty-index" aria-hidden="true">↗</span>
+                <strong>A starting point for your investigation.</strong>
+                <span>Run a case to see candidate profiles, matched findings, and gaps to review.</span>
+                <button type="button" class="empty-demo" data-demo="connective">Try the connective tissue example →</button>
+              </div>
+            </div>
+
+            <div id="differential" class="differential" hidden>
+              <div class="subsection-heading">
+                <div>
+                  <p class="section-label">Profile check</p>
+                  <h3>Expected findings</h3>
+                </div>
+              </div>
+              <label class="sr-only" for="profile-select">Select a disease candidate</label>
+              <select id="profile-select">
+                <option value="">Choose a candidate to compare…</option>
+              </select>
+              <div id="profile-results"></div>
+            </div>
+
+            <div id="feedback" class="feedback" hidden>
+              <div>
+                <strong>Useful shortlist?</strong>
+                <span>Feedback stays local.</span>
+              </div>
+              <span class="feedback-actions">
+                <button type="button" data-useful="true">Yes</button>
+                <button type="button" data-useful="false">Not yet</button>
+              </span>
+            </div>
+          </article>
+        </section>
+
+      </main>
+    </div>
+
+    <section id="how-it-works" class="story-section section-reveal" aria-labelledby="method-title">
+      <header class="section-intro">
+        <div>
+          <p class="section-label">03 / How it works</p>
+          <h2 id="method-title">From a messy note to evidence you can inspect.</h2>
+        </div>
+        <p>The app creates a structured starting point for a human reviewer. Every step stays visible, editable, and connected to its source data.</p>
+      </header>
+
+      <div class="method-line" aria-hidden="true"><i></i></div>
+      <div class="method-grid">
+        <article class="method-card reveal-item">
+          <span>01</span><i aria-hidden="true">Aa</i>
+          <h3>Extract</h3>
+          <p>Plain clinical language is matched to standardized Human Phenotype Ontology terms.</p>
+          <code>“joint pain” → HP:0002829</code>
+        </article>
+        <article class="method-card reveal-item">
+          <span>02</span><i aria-hidden="true">×</i>
+          <h3>Review</h3>
+          <p>You remove weak matches, mark findings that are absent, and add patient context.</p>
+          <code>Human check stays in the loop</code>
+        </article>
+        <article class="method-card reveal-item">
+          <span>03</span><i aria-hidden="true">≋</i>
+          <h3>Compare</h3>
+          <p>Local HPO annotations are ranked by weighted overlap with the reviewed finding set.</p>
+          <code>Similarity ≠ probability</code>
+        </article>
+        <article class="method-card reveal-item">
+          <span>04</span><i aria-hidden="true">↗</i>
+          <h3>Investigate</h3>
+          <p>Inspect matched evidence, conflicts, missing findings, and trusted research links.</p>
+          <code>Evidence before conclusions</code>
+        </article>
+      </div>
+
+      <aside class="scope-callout reveal-item">
+        <strong>It does not diagnose a patient.</strong>
+        <p>It organizes clues, surfaces candidate profiles, and makes the ranking logic easier to challenge. A qualified clinician still owns every medical decision.</p>
+        <a href="#analysis">Open the workspace <span aria-hidden="true">↗</span></a>
+      </aside>
+    </section>
+
+    <section id="tools" class="tools-section section-reveal" aria-labelledby="tools-title">
+      <header class="section-intro tools-intro">
+        <div>
+          <p class="section-label">04 / More tools</p>
+          <h2 id="tools-title">Useful before and after the analysis.</h2>
+        </div>
+        <p>Two focused utilities make the ontology easier to explore and help first-time users build a clean case without guessing the right format.</p>
+      </header>
+
+      <div class="tool-grid">
+        <article class="tool-card ontology-tool reveal-item">
+          <header><span class="tool-index">01</span><div><p class="section-label">Local reference</p><h3>HPO term explorer</h3></div></header>
+          <p>Search the local ontology for a clinical phrase, standardized name, or HPO ID.</p>
+          <form id="hpo-form" class="tool-search" role="search">
+            <label class="sr-only" for="hpo-query">Search phenotype terms</label>
+            <input id="hpo-query" type="search" maxlength="120" autocomplete="off" placeholder="Try “joint pain”">
+            <button type="submit">Search <span aria-hidden="true">↗</span></button>
+          </form>
+          <div id="hpo-results" class="hpo-results" aria-live="polite">
+            <button type="button" class="search-suggestion" data-hpo-query="joint pain">joint pain</button>
+            <button type="button" class="search-suggestion" data-hpo-query="developmental delay">developmental delay</button>
+            <button type="button" class="search-suggestion" data-hpo-query="skin laxity">skin laxity</button>
+          </div>
+        </article>
+
+        <article class="tool-card builder-tool reveal-item">
+          <header><span class="tool-index">02</span><div><p class="section-label">Guided input</p><h3>Quick case builder</h3></div></header>
+          <p>Pick observed and absent findings. We’ll turn them into a clean draft in the analysis workspace.</p>
+          <fieldset class="builder-group">
+            <legend>Observed</legend>
+            <div class="builder-chips">
+              <button type="button" data-builder-finding="developmental delay" aria-pressed="false">Developmental delay</button>
+              <button type="button" data-builder-finding="seizures" aria-pressed="false">Seizures</button>
+              <button type="button" data-builder-finding="hypotonia" aria-pressed="false">Hypotonia</button>
+              <button type="button" data-builder-finding="scoliosis" aria-pressed="false">Scoliosis</button>
+              <button type="button" data-builder-finding="short stature" aria-pressed="false">Short stature</button>
+              <button type="button" data-builder-finding="skin laxity" aria-pressed="false">Skin laxity</button>
+              <button type="button" data-builder-finding="joint pain" aria-pressed="false">Joint pain</button>
+              <button type="button" data-builder-finding="hypertelorism" aria-pressed="false">Hypertelorism</button>
+            </div>
+          </fieldset>
+          <fieldset class="builder-group absent-group">
+            <legend>Explicitly absent <small>optional</small></legend>
+            <div class="builder-chips">
+              <button type="button" data-builder-absent="seizures" aria-pressed="false">No seizures</button>
+              <button type="button" data-builder-absent="hearing loss" aria-pressed="false">No hearing loss</button>
+              <button type="button" data-builder-absent="vision loss" aria-pressed="false">No vision loss</button>
+            </div>
+          </fieldset>
+          <div class="builder-preview"><span>Draft preview</span><p id="builder-preview">Choose at least one observed finding.</p></div>
+          <button id="builder-use" class="builder-use" type="button" disabled>Send draft to workspace <span aria-hidden="true">↗</span></button>
+        </article>
+
+        <article class="tool-card toolkit-tool reveal-item">
+          <header><span class="tool-index">03</span><div><p class="section-label">Review kit</p><h3>Turn results into next steps</h3></div></header>
+          <p>Once a case runs, the workspace unlocks tools built for explanation—not just a ranked list.</p>
+          <div class="toolkit-list">
+            <a href="#analysis"><b>Compare the top three</b><span>See which case findings each profile explains. ↗</span></a>
+            <a href="#analysis"><b>Inspect scoring evidence</b><span>Review weights, missing findings, and conflicts. ↗</span></a>
+            <a href="#analysis"><b>Generate a review brief</b><span>Copy or download an auditable case summary. ↗</span></a>
+          </div>
+          <button type="button" class="tool-demo" data-demo="neuro">Run the neurological demo <span aria-hidden="true">↗</span></button>
+        </article>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <span>Clinical Analysis</span>
+      <span>Built for the Congressional App Challenge</span>
+      <span>Decision support — not a medical diagnosis</span>
+    </footer>
+  </div>
+  <dialog id="brief-dialog" aria-labelledby="brief-title">
+    <header><div><p class="section-label">Ready for review</p><h2 id="brief-title">Your case brief.</h2></div><button id="brief-close" type="button" aria-label="Close review brief">×</button></header>
+    <p>A snapshot of the analyzed case and its evidence. Copy it or save a text file for your demonstration.</p>
+    <label for="brief-text" class="sr-only">Review brief contents</label><textarea id="brief-text" readonly></textarea>
+    <footer><button id="brief-copy" type="button" class="primary-button">Copy brief</button><button id="brief-save" type="button" class="secondary-button">Download .txt ↓</button></footer>
+    <p id="brief-status" role="status" aria-live="polite"></p>
+  </dialog>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
