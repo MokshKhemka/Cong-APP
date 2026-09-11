@@ -150,15 +150,15 @@
           <button type="button" data-demo="skeletal"><span>03</span> Skeletal <b>↗</b></button>
         </div>
         <nav class="workflow" aria-label="Analysis progress">
-          <a href="#clinical-text" aria-current="step"><b>1</b><span>Enter observed findings<small>Use the single note box</small></span></a>
-          <a href="#phenotype-heading"><b>2</b><span>Check extracted terms<small>Remove anything incorrect</small></span></a>
-          <a href="#differential-heading"><b>3</b><span>Review candidates<small>Inspect why each matched</small></span></a>
+          <button type="button" data-wizard-go="0" aria-current="step"><b>1</b><span>Enter observed findings<small>Use the single note box</small></span></button>
+          <button type="button" data-wizard-go="1" disabled><b>2</b><span>Check extracted terms<small>Remove anything incorrect</small></span></button>
+          <button type="button" data-wizard-go="2" disabled><b>3</b><span>Review candidates<small>Inspect why each matched</small></span></button>
         </nav>
         <p id="case-status" class="case-status" role="status" aria-live="polite">Your note stays on this computer. Try an example or enter your own findings.</p>
         <div id="demo-confirm" class="demo-confirm" hidden><p>Load this example in place of your current note?</p><button id="demo-replace" type="button">Load example</button><button id="demo-cancel" type="button">Keep my note</button></div>
 
         <section class="workspace" aria-label="Clinical analysis tools" aria-busy="false">
-          <article class="panel input-panel">
+          <article class="panel input-panel wizard-page" data-wizard-page="0">
             <header class="panel-heading">
               <div>
                 <p class="section-label">01 / Input</p>
@@ -184,63 +184,33 @@
             </div>
 
             <input id="additional-text" type="hidden" value="">
-            <div class="field absent-field">
-              <div class="label-row">
-                <label for="absent-text">Absent findings <small>optional</small></label>
-                <span>Only if explicitly checked</span>
-              </div>
-              <input id="absent-text" type="text" maxlength="10000" autocomplete="off" placeholder="Example: seizures, hearing loss">
-              <p class="field-hint">Use this only for findings confirmed not to be present. These can lower mismatched candidate scores.</p>
-            </div>
-
-            <details class="context-card">
-              <summary>
-                <span>Patient context</span>
-                <small>Optional signals</small>
-              </summary>
-              <div class="context-content">
-                <div class="context-grid">
-                  <div class="field">
-                    <label for="patient-age">Age in years</label>
-                    <input id="patient-age" type="number" min="0" max="120" step="0.1" placeholder="34">
-                  </div>
-                  <div class="field">
-                    <label for="patient-sex">Sex</label>
-                    <select id="patient-sex">
-                      <option value="unknown">Unknown</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                    </select>
-                  </div>
-                </div>
-                <label class="question">
-                  <input id="refractory" type="checkbox">
-                  <span>
-                    <strong>Persistent presentation</strong>
-                    Symptoms continued despite treatment for a suspected common cause
-                  </span>
-                </label>
-              </div>
-            </details>
-
             <div class="action-row">
               <button id="analyze-button" class="primary-button" type="button" title="Analyze note (Ctrl/Command + Enter)">
-                <span>Extract and compare</span>
-                <span class="run-icon" aria-hidden="true">↗</span>
+                <span>Continue to review</span>
+                <span class="run-icon" aria-hidden="true">→</span>
                 <kbd>⌘ ↵</kbd>
               </button>
-              <span class="action-note">Runs on this computer</span>
+              <span class="action-note">Step 1 of 3 · runs locally</span>
             </div>
+          </article>
 
+          <article class="panel review-panel wizard-page" data-wizard-page="1" hidden>
+            <header class="panel-heading">
+              <div>
+                <p class="section-label">02 / Review</p>
+                <h2>Check what Notice found</h2>
+              </div>
+              <span class="panel-state review-state">Your turn</span>
+            </header>
             <section class="phenotype-section" aria-labelledby="phenotype-heading">
               <div class="subsection-heading">
                 <div>
-                  <p class="section-label">02 / Validate</p>
+                  <p class="section-label">Observed findings</p>
                   <h3 id="phenotype-heading">Extracted phenotypes</h3>
                 </div>
                 <span class="review-hint">Remove incorrect matches ×</span>
               </div>
-              <p class="field-hint">HPO (Human Phenotype Ontology) gives each finding a standard name and ID.</p>
+              <p class="review-copy">Notice translated your note into standardized HPO terms. Remove anything that does not match the patient before continuing.</p>
               <div id="term-results" class="results empty" aria-live="polite">
                 <div class="empty-state compact">
                   <span class="empty-code" aria-hidden="true">—</span>
@@ -248,9 +218,55 @@
                 </div>
               </div>
             </section>
+
+            <div class="review-options">
+              <div class="field absent-field">
+                <div class="label-row">
+                  <label for="absent-text">Anything confirmed absent? <small>optional</small></label>
+                  <span>Only if explicitly checked</span>
+                </div>
+                <input id="absent-text" type="text" maxlength="10000" autocomplete="off" placeholder="Example: seizures, hearing loss">
+                <p class="field-hint">Leave this blank if you do not know. Absent findings can lower mismatched candidate scores.</p>
+              </div>
+
+              <details class="context-card">
+                <summary>
+                  <span>Add age, sex, or persistence</span>
+                  <small>Optional context</small>
+                </summary>
+                <div class="context-content">
+                  <div class="context-grid">
+                    <div class="field">
+                      <label for="patient-age">Age in years</label>
+                      <input id="patient-age" type="number" min="0" max="120" step="0.1" placeholder="34">
+                    </div>
+                    <div class="field">
+                      <label for="patient-sex">Sex</label>
+                      <select id="patient-sex">
+                        <option value="unknown">Unknown</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                      </select>
+                    </div>
+                  </div>
+                  <label class="question">
+                    <input id="refractory" type="checkbox">
+                    <span>
+                      <strong>Persistent presentation</strong>
+                      Symptoms continued despite treatment for a suspected common cause
+                    </span>
+                  </label>
+                </div>
+              </details>
+            </div>
+
+            <div class="wizard-actions">
+              <button type="button" class="wizard-back" data-wizard-go="0">← Back to note</button>
+              <button id="review-continue" type="button" class="primary-button"><span>See candidate profiles</span><span aria-hidden="true">→</span></button>
+            </div>
           </article>
 
-          <article class="panel results-panel">
+          <article class="panel results-panel wizard-page" data-wizard-page="2" hidden>
             <header class="panel-heading">
               <div>
                 <p class="section-label accent">03 / Inspect</p>
@@ -258,6 +274,7 @@
               </div>
               <span class="panel-state waiting">Waiting</span>
             </header>
+            <div class="results-back"><button type="button" data-wizard-go="1">← Back to findings</button><span>Step 3 of 3</span></div>
             <div id="result-tools" class="result-tools" hidden>
               <div class="view-switch" role="group" aria-label="Results view"><button id="view-list" type="button" aria-pressed="true">Ranked list</button><button id="view-compare" type="button" aria-pressed="false">Compare top 3</button></div>
               <details class="inline-help"><summary>How are scores calculated?</summary><p>Scores measure weighted overlap with annotated phenotype profiles. They are not the probability of having a disease. Higher means closer overlap; frequency weights can push scores above 100. Rare findings carry more weight; absent findings and context can reduce a score. This heuristic prototype has not been clinically validated.</p></details>

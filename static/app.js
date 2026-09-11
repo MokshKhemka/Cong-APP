@@ -21,6 +21,9 @@ const hpoQuery = document.querySelector('#hpo-query');
 const hpoResults = document.querySelector('#hpo-results');
 const builderPreview = document.querySelector('#builder-preview');
 const builderUse = document.querySelector('#builder-use');
+const reviewContinue = document.querySelector('#review-continue');
+const wizardPages = [...document.querySelectorAll('[data-wizard-page]')];
+const wizardControls = [...document.querySelectorAll('.workflow [data-wizard-go]')];
 
 const excludedTermIds = new Set();
 let latestAnalysis = null;
@@ -37,11 +40,18 @@ const demos = {
   skeletal: {name: 'Skeletal', text: 'Patient has short stature, scoliosis and brachydactyly.'},
 };
 
-function setStep(index) {
-  document.querySelectorAll('.workflow a').forEach((link, i) => {
-    if (i === index) link.setAttribute('aria-current', 'step');
-    else link.removeAttribute('aria-current');
+function setStep(index, {scroll = false} = {}) {
+  wizardPages.forEach(page => { page.hidden = Number(page.dataset.wizardPage) !== index; });
+  wizardControls.forEach((control, i) => {
+    if (i === index) control.setAttribute('aria-current', 'step');
+    else control.removeAttribute('aria-current');
   });
+  if (scroll) document.querySelector('.workspace').scrollIntoView({behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start'});
+}
+
+function updateWizardAccess() {
+  wizardControls[1].disabled = !latestAnalysis;
+  wizardControls[2].disabled = !latestAnalysis?.diseases.length || isStale;
 }
 
 function setResultsView(compare) {
@@ -64,13 +74,28 @@ function renderComparison(data) {
 function markEdited() {
   document.querySelector('#note-count').textContent = `${textInput.value.length.toLocaleString()} / 10,000`;
   setStep(0);
-  if (!latestAnalysis) return;
+  if (!latestAnalysis) {
+    updateWizardAccess();
+    return;
+  }
   isStale = true;
   exportButton.hidden = true;
   feedback.hidden = true;
   caseStatus.classList.add('stale');
   caseStatus.textContent = 'Case changed. The displayed results belong to the previous analysis. Run again to update them.';
   resultsPanelState.textContent = 'Needs update';
+  updateWizardAccess();
+}
+
+function markReviewEdited() {
+  if (!latestAnalysis) return;
+  isStale = true;
+  exportButton.hidden = true;
+  feedback.hidden = true;
+  caseStatus.classList.add('stale');
+  caseStatus.textContent = 'Review options changed. Continue to refresh the candidate profiles.';
+  resultsPanelState.textContent = 'Needs update';
+  updateWizardAccess();
 }
 
 async function loadDemo(key) {
@@ -86,8 +111,8 @@ async function loadDemo(key) {
   excludedTermIds.clear();
   markEdited();
   document.querySelector('#analysis').scrollIntoView({behavior: reducedMotion.matches ? 'instant' : 'smooth'});
-  await analyze();
-  if (latestAnalysis) caseStatus.textContent = `Fictional example: ${demo.name}. ${latestAnalysis.terms.length} findings extracted. Review them, then compare the candidate evidence.`;
+  await analyze(1);
+  if (latestAnalysis) caseStatus.textContent = `Fictional example: ${demo.name}. ${latestAnalysis.terms.length} findings extracted. Review them, then continue to candidates.`;
 }
 
 document.addEventListener('click', event => {
@@ -106,7 +131,8 @@ document.querySelector('#demo-replace').addEventListener('click', () => { if (pe
 document.querySelector('#demo-cancel').addEventListener('click', () => { pendingDemo = null; document.querySelector('#demo-confirm').hidden = true; });
 document.querySelector('#view-list').addEventListener('click', () => setResultsView(false));
 document.querySelector('#view-compare').addEventListener('click', () => setResultsView(true));
-formControls.forEach(control => control.addEventListener('input', markEdited));
+textInput.addEventListener('input', markEdited);
+[absentText, patientAge, patientSex, refractory].forEach(control => control.addEventListener('input', markReviewEdited));
 
 const hero = document.querySelector('.hero');
 const signalBoard = document.querySelector('.signal-board');
@@ -129,7 +155,11 @@ function syncHeader() {
 
 syncHeader();
 window.addEventListener('scroll', syncHeader, {passive: true});
-document.querySelectorAll('.workflow a').forEach((link, index) => link.addEventListener('click', () => setStep(index)));
+document.addEventListener('click', event => {
+  const control = event.target.closest('[data-wizard-go]');
+  if (!control || control.disabled) return;
+  setStep(Number(control.dataset.wizardGo), {scroll: true});
+});
 
 if (hero && signalBoard && !reducedMotion.matches) {
   let motionFrame = 0;
@@ -281,6 +311,7 @@ builderUse?.addEventListener('click', () => {
   excludedTermIds.clear();
   markEdited();
   history.pushState(null, '', '#analysis');
+  setStep(0);
   document.querySelector('#analysis').scrollIntoView({behavior: reducedMotion.matches ? 'instant' : 'smooth'});
   setTimeout(() => textInput.focus({preventScroll: true}), reducedMotion.matches ? 0 : 500);
 });
@@ -294,7 +325,9 @@ function setLoading(isLoading) {
   analyzeButton.disabled = isLoading;
   formControls.forEach(control => { control.disabled = isLoading; });
   document.querySelectorAll('[data-demo], .remove-term, #demo-replace').forEach(button => { button.disabled = isLoading; });
-  analyzeButton.querySelector('span').textContent = isLoading ? 'Comparing profiles…' : 'Extract and compare';
+  reviewContinue.disabled = isLoading;
+  analyzeButton.querySelector('span').textContent = isLoading ? 'Extracting findings…' : 'Continue to review';
+  reviewContinue.querySelector('span').textContent = isLoading ? 'Updating candidates…' : 'See candidate profiles';
   document.querySelector('.workspace').setAttribute('aria-busy', String(isLoading));
 }
 
@@ -417,7 +450,7 @@ function renderProfile(disease) {
       </div>`).join('')}`;
 }
 
-async function analyze() {
+async function analyze(destination = 1) {
   if (analyzeButton.disabled) return;
   const text = textInput.value.trim();
   if (!text) {
@@ -461,7 +494,9 @@ async function analyze() {
     renderSignals(data);
     renderComparison(data);
     resultTools.hidden = !data.diseases.length;
-    caseStatus.textContent = `${data.terms.length} findings extracted · ${data.diseases.length} candidates returned. Review the extracted terms, then compare the evidence.`;
+    caseStatus.textContent = destination === 2
+      ? `${data.terms.length} findings confirmed · ${data.diseases.length} candidates ready to inspect.`
+      : `${data.terms.length} findings extracted. Check each term, add any confirmed absences, then continue.`;
     differential.hidden = !data.diseases.length;
     profileSelect.innerHTML = '<option value="">Choose a candidate to compare…</option>'
       + data.diseases.map((disease, index) => (
@@ -471,34 +506,36 @@ async function analyze() {
     feedback.hidden = false;
     inputPanelState.textContent = `${data.terms.length} found`;
     resultsPanelState.textContent = `${data.diseases.length} ranked`;
+    updateWizardAccess();
+    setStep(destination, {scroll: true});
   } catch (error) {
     showError(termResults, error.message);
     showError(diseaseResults, 'Analysis failed. Check the service and try again.');
     inputPanelState.textContent = 'Review';
     resultsPanelState.textContent = 'Error';
     caseStatus.textContent = 'Analysis could not complete. Review the error below and try again.';
-    setStep(0);
+    updateWizardAccess();
+    setStep(destination === 2 ? 1 : 0);
   } finally {
     setLoading(false);
   }
 }
 
-analyzeButton.addEventListener('click', analyze);
+analyzeButton.addEventListener('click', () => analyze(1));
+reviewContinue.addEventListener('click', () => analyze(2));
 textInput.addEventListener('keydown', event => {
   if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
     event.preventDefault();
-    analyze();
+    analyze(1);
   }
 });
-[textInput, additionalText].forEach(input => {
-  input.addEventListener('input', () => excludedTermIds.clear());
-});
+textInput.addEventListener('input', () => excludedTermIds.clear());
 
 termResults.addEventListener('click', event => {
   const button = event.target.closest('[data-remove-term]');
   if (!button) return;
   excludedTermIds.add(button.dataset.removeTerm);
-  analyze();
+  analyze(1);
 });
 
 profileSelect.addEventListener('change', event => {

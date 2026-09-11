@@ -14,7 +14,7 @@ Ontology matching uses a token index, and disease frequency statistics are preco
 
 ## Interactive demonstration
 
-Use **Try a sample case** to run a fictional connective-tissue example, or choose a neurological or skeletal example in the workspace. Existing input is preserved until you confirm loading another example.
+Use **Try a sample case** to run a fictional connective-tissue example, or choose a neurological or skeletal example in the workspace. Existing input is preserved until you confirm loading another example. The analysis workspace is a three-screen flow: enter observed findings, review the extracted HPO terms and optional absent findings, then inspect candidate profiles.
 
 Review the extracted HPO findings and remove incorrect matches to recompute the ranking. **Compare top 3** shows a finding-by-finding matrix and conflicts for the leading profiles. An unlisted annotation does not rule out a disease. Scores are weighted similarity values, not probabilities; weighting can produce values above 100.
 
