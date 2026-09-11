@@ -16,6 +16,8 @@ Ontology matching uses a token index, and disease frequency statistics are preco
 
 Use **Try a sample case** to run a fictional connective-tissue example, or choose a neurological or skeletal example in the workspace. Existing input is preserved until you confirm loading another example. The analysis workspace is a three-screen flow: enter observed findings, review the extracted HPO terms and optional absent findings, then inspect candidate profiles.
 
+The **60-sec demo** adds contextual guidance to the connective-tissue case, walks the reviewer from standardized findings to candidate evidence, and finishes with the top-three comparison. The app also includes an in-product engineering overview of its local parser, token index, weighted ranking engine, and evidence layer.
+
 Review the extracted HPO findings and remove incorrect matches to recompute the ranking. **Compare top 3** shows a finding-by-finding matrix and conflicts for the leading profiles. An unlisted annotation does not rule out a disease. Scores are weighted similarity values, not probabilities; weighting can produce values above 100.
 
 **Review brief** opens a plain-text snapshot of the analyzed input, findings, candidates, and research links, with copy and download controls. Copy also provides a fallback for embedded browsers that do not support file downloads. Editing a case marks displayed results as outdated and hides export until a new analysis succeeds. Notes are not saved in browser storage.

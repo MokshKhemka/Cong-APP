@@ -24,12 +24,18 @@ const builderUse = document.querySelector('#builder-use');
 const reviewContinue = document.querySelector('#review-continue');
 const wizardPages = [...document.querySelectorAll('[data-wizard-page]')];
 const wizardControls = [...document.querySelectorAll('.workflow [data-wizard-go]')];
+const guidedDemo = document.querySelector('#guided-demo');
+const guidedDemoIndex = document.querySelector('#guided-demo-index');
+const guidedDemoTitle = document.querySelector('#guided-demo-title');
+const guidedDemoCopy = document.querySelector('#guided-demo-copy');
+const guidedDemoNext = document.querySelector('#guided-demo-next');
 
 const excludedTermIds = new Set();
 let latestAnalysis = null;
 let latestInput = null;
 let pendingDemo = null;
 let isStale = false;
+let guidedDemoActive = false;
 const caseStatus = document.querySelector('#case-status');
 const resultTools = document.querySelector('#result-tools');
 const comparison = document.querySelector('#comparison');
@@ -46,12 +52,37 @@ function setStep(index, {scroll = false} = {}) {
     if (i === index) control.setAttribute('aria-current', 'step');
     else control.removeAttribute('aria-current');
   });
-  if (scroll) document.querySelector('.workspace').scrollIntoView({behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start'});
+  renderGuidedDemo(index);
+  if (scroll) {
+    const scrollTarget = !guidedDemo.hidden ? guidedDemo : document.querySelector('.workspace');
+    scrollTarget.scrollIntoView({behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start'});
+  }
 }
 
 function updateWizardAccess() {
   wizardControls[1].disabled = !latestAnalysis;
   wizardControls[2].disabled = !latestAnalysis?.diseases.length || isStale;
+}
+
+function renderGuidedDemo(index) {
+  if (!guidedDemoActive || !latestAnalysis || index === 0) {
+    guidedDemo.hidden = true;
+    return;
+  }
+
+  guidedDemo.hidden = false;
+  guidedDemoNext.hidden = false;
+  if (index === 1) {
+    guidedDemoIndex.textContent = 'Demo 1 / 2';
+    guidedDemoTitle.textContent = 'Notice made the note reviewable.';
+    guidedDemoCopy.textContent = `${latestAnalysis.terms.length} phrases were translated into standardized HPO terms. Check them, then continue.`;
+    guidedDemoNext.innerHTML = 'See the candidate evidence <span aria-hidden="true">→</span>';
+  } else {
+    guidedDemoIndex.textContent = 'Demo 2 / 2';
+    guidedDemoTitle.textContent = 'The shortlist shows its work.';
+    guidedDemoCopy.textContent = `${latestAnalysis.diseases.length} candidate profiles are ranked by similarity—not probability. Open a result or compare the top three.`;
+    guidedDemoNext.innerHTML = 'Compare the top three <span aria-hidden="true">→</span>';
+  }
 }
 
 function setResultsView(compare) {
@@ -118,6 +149,7 @@ async function loadDemo(key) {
 document.addEventListener('click', event => {
   const button = event.target.closest('[data-demo]');
   if (!button || analyzeButton.disabled) return;
+  guidedDemoActive = button.hasAttribute('data-guided-demo');
   const key = button.dataset.demo;
   if (!demos[key]) return;
   if (formControls.some(control => control.type === 'checkbox' ? control.checked : control === patientSex ? control.value !== 'unknown' : control.value.trim())) {
@@ -128,7 +160,7 @@ document.addEventListener('click', event => {
   } else loadDemo(key);
 });
 document.querySelector('#demo-replace').addEventListener('click', () => { if (pendingDemo && !analyzeButton.disabled) loadDemo(pendingDemo); });
-document.querySelector('#demo-cancel').addEventListener('click', () => { pendingDemo = null; document.querySelector('#demo-confirm').hidden = true; });
+document.querySelector('#demo-cancel').addEventListener('click', () => { pendingDemo = null; guidedDemoActive = false; document.querySelector('#demo-confirm').hidden = true; });
 document.querySelector('#view-list').addEventListener('click', () => setResultsView(false));
 document.querySelector('#view-compare').addEventListener('click', () => setResultsView(true));
 textInput.addEventListener('input', markEdited);
@@ -523,6 +555,22 @@ async function analyze(destination = 1) {
 
 analyzeButton.addEventListener('click', () => analyze(1));
 reviewContinue.addEventListener('click', () => analyze(2));
+guidedDemoNext.addEventListener('click', () => {
+  const currentStep = Number(document.querySelector('.workflow [aria-current="step"]')?.dataset.wizardGo || 0);
+  if (currentStep === 1) {
+    analyze(2);
+    return;
+  }
+  document.querySelector('#view-compare').click();
+  guidedDemoNext.hidden = true;
+  guidedDemoTitle.textContent = 'Side-by-side evidence is open.';
+  guidedDemoCopy.textContent = 'Each column shows which patient findings the leading profiles explain and where annotations are missing.';
+  document.querySelector('#comparison').scrollIntoView({behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start'});
+});
+document.querySelector('#guided-demo-close').addEventListener('click', () => {
+  guidedDemoActive = false;
+  guidedDemo.hidden = true;
+});
 textInput.addEventListener('keydown', event => {
   if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
     event.preventDefault();

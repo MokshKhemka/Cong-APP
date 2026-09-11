@@ -32,7 +32,7 @@
           <i aria-hidden="true"></i>
           Checking datasets…
         </span>
-        <a class="new-case" href="#analysis">Workspace <span aria-hidden="true">↗</span></a>
+        <button class="new-case" type="button" data-demo="connective" data-guided-demo>60-sec demo <span aria-hidden="true">↗</span></button>
       </div>
     </header>
 
@@ -50,10 +50,10 @@
           <h1><span>Connect the</span><span>clinical clues.</span></h1>
           <p class="hero-lede">Notice turns observed findings into a structured phenotype set, compares candidate profiles, and shows the evidence behind every match.</p>
           <div class="hero-actions">
-            <button class="hero-primary" type="button" data-demo="connective">Try a sample case <span aria-hidden="true">↗</span></button>
+            <button class="hero-primary" type="button" data-demo="connective" data-guided-demo>Run the 60-sec demo <span aria-hidden="true">↗</span></button>
             <a class="hero-secondary" href="#analysis">Open workspace <span aria-hidden="true">→</span></a>
           </div>
-          <p class="hero-boundary"><strong>Decision support, not diagnosis.</strong> Results are candidate profiles for a qualified reviewer to investigate.</p>
+          <p class="hero-boundary"><strong>Decision support, not diagnosis.</strong> Results are candidate profiles for a qualified reviewer to investigate.<span class="hero-proofline"><i aria-hidden="true"></i> Local data · no external AI · evidence stays visible</span></p>
         </div>
 
         <div id="signal-board" class="signal-board" aria-label="Illustrative clinical note and standardized findings">
@@ -156,6 +156,12 @@
         </nav>
         <p id="case-status" class="case-status" role="status" aria-live="polite">Your note stays on this computer. Try an example or enter your own findings.</p>
         <div id="demo-confirm" class="demo-confirm" hidden><p>Load this example in place of your current note?</p><button id="demo-replace" type="button">Load example</button><button id="demo-cancel" type="button">Keep my note</button></div>
+        <aside id="guided-demo" class="guided-demo" hidden aria-live="polite">
+          <span class="guided-demo-index" id="guided-demo-index">Demo 1 / 2</span>
+          <div><strong id="guided-demo-title">Notice did the translation.</strong><p id="guided-demo-copy">One plain-language note became a reviewable set of standardized findings.</p></div>
+          <button id="guided-demo-next" class="guided-demo-next" type="button">Continue <span aria-hidden="true">→</span></button>
+          <button id="guided-demo-close" class="guided-demo-close" type="button" aria-label="End guided demo">×</button>
+        </aside>
 
         <section class="workspace" aria-label="Clinical analysis tools" aria-busy="false">
           <article class="panel input-panel wizard-page" data-wizard-page="0">
@@ -356,6 +362,21 @@
           <code>Evidence before conclusions</code>
         </article>
       </div>
+
+      <section class="build-proof reveal-item" aria-labelledby="build-proof-title">
+        <header>
+          <p class="section-label">Built, not wrapped</p>
+          <h3 id="build-proof-title">Real data. Real ranking. No black box.</h3>
+          <p>Notice does not send a prompt to an external model. It parses public clinical datasets locally, builds searchable indexes, and shows the evidence used by its ranking engine.</p>
+          <div class="stack-tags" aria-label="Technology stack"><span>Python</span><span>Flask</span><span>Vanilla JS</span><span>HPO</span><span>HPOA</span></div>
+        </header>
+        <ol class="code-flow">
+          <li><b>01</b><span><strong>Parse</strong>OBO terms, synonyms, and disease annotations</span></li>
+          <li><b>02</b><span><strong>Index</strong>Tokens for fast, local phenotype matching</span></li>
+          <li><b>03</b><span><strong>Rank</strong>Weighted overlap, context, and absent findings</span></li>
+          <li><b>04</b><span><strong>Explain</strong>Matches, conflicts, gaps, and source links</span></li>
+        </ol>
+      </section>
 
       <aside class="scope-callout reveal-item">
         <strong>It does not diagnose a patient.</strong>
