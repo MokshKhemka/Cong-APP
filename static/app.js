@@ -294,7 +294,7 @@ function setLoading(isLoading) {
   analyzeButton.disabled = isLoading;
   formControls.forEach(control => { control.disabled = isLoading; });
   document.querySelectorAll('[data-demo], .remove-term, #demo-replace').forEach(button => { button.disabled = isLoading; });
-  analyzeButton.querySelector('span').textContent = isLoading ? 'Comparing profiles…' : 'Find candidate profiles';
+  analyzeButton.querySelector('span').textContent = isLoading ? 'Comparing profiles…' : 'Extract and compare';
   document.querySelector('.workspace').setAttribute('aria-busy', String(isLoading));
 }
 
@@ -507,9 +507,9 @@ profileSelect.addEventListener('change', event => {
 exportButton.addEventListener('click', () => {
   if (!latestAnalysis || !latestInput || isStale) return;
   const data = latestAnalysis;
-  const lines = ['CLINICAL ANALYSIS — REVIEW BRIEF', new Date().toLocaleString(),
+  const lines = ['NOTICE — REVIEW BRIEF', new Date().toLocaleString(),
     'Heuristic phenotype comparison. Not a diagnosis. Scores are similarity values, not probabilities.',
-    '', 'CASE NOTE', latestInput.text, '', `Additional findings: ${latestInput.additional || 'None'}`,
+    '', 'CASE NOTE', latestInput.text, '',
     `Explicitly absent: ${latestInput.absent || 'None'}`, `Age: ${latestInput.age || 'Unspecified'}; sex: ${latestInput.sex}; persistent despite treatment: ${latestInput.refractory ? 'Yes' : 'No'}`,
     '', 'PHENOTYPE SET', ...data.terms.map(t => `${t.name} (${t.id})`), '', 'CANDIDATE PROFILES'];
   data.diseases.forEach((d, i) => lines.push('', `${i + 1}. ${d.name} (${d.id})`,

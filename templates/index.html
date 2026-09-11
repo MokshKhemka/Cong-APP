@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="On-device phenotype extraction and explainable rare-disease profile ranking for clinical review.">
-  <title>Clinical Analysis — Phenotype Decision Support</title>
+  <title>Notice — Phenotype Decision Support</title>
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='polish.css') }}">
@@ -12,10 +12,10 @@
 <body>
   <div class="app-frame">
     <header class="app-header">
-      <a class="brand" href="#top" aria-label="Clinical Analysis home">
-        <span class="brand-mark" aria-hidden="true">CA</span>
+      <a class="brand" href="#top" aria-label="Notice home">
+        <span class="brand-mark" aria-hidden="true">N</span>
         <span class="brand-copy">
-          <strong>Clinical Analysis</strong>
+          <strong>Notice</strong>
           <small>Phenotype decision support</small>
         </span>
       </a>
@@ -46,9 +46,9 @@
     <section id="top" class="hero">
       <div class="hero-grid">
         <div class="hero-copy">
-          <p class="hero-kicker"><span>01</span> Designed for clinical review</p>
+          <p class="hero-kicker"><span>01</span> Notice the pattern</p>
           <h1><span>Connect the</span><span>clinical clues.</span></h1>
-          <p class="hero-lede">A workspace for exploring rare-disease possibilities. Turn a clinical note into a structured set of findings, compare candidate profiles, and see the evidence behind each match.</p>
+          <p class="hero-lede">Notice turns observed findings into a structured phenotype set, compares candidate profiles, and shows the evidence behind every match.</p>
           <div class="hero-actions">
             <button class="hero-primary" type="button" data-demo="connective">Try a sample case <span aria-hidden="true">↗</span></button>
             <a class="hero-secondary" href="#analysis">Open workspace <span aria-hidden="true">→</span></a>
@@ -132,8 +132,8 @@
         <header class="content-header">
           <div>
             <p class="breadcrumb"><span>Workspace</span><i>/</i>New case</p>
-            <h2>Your next investigation.</h2>
-            <p>Start with a note. Follow the evidence.</p>
+            <h2>Start with what you observe.</h2>
+            <p>One note box, one review step, then an evidence-backed shortlist.</p>
           </div>
           <div class="content-actions">
             <span class="privacy-state"><i></i> On-device</span>
@@ -150,9 +150,9 @@
           <button type="button" data-demo="skeletal"><span>03</span> Skeletal <b>↗</b></button>
         </div>
         <nav class="workflow" aria-label="Analysis progress">
-          <a href="#clinical-text" aria-current="step"><b>1</b><span>Describe the case</span></a>
-          <a href="#phenotype-heading"><b>2</b><span>Review the findings</span></a>
-          <a href="#differential-heading"><b>3</b><span>Compare the evidence</span></a>
+          <a href="#clinical-text" aria-current="step"><b>1</b><span>Enter observed findings<small>Use the single note box</small></span></a>
+          <a href="#phenotype-heading"><b>2</b><span>Check extracted terms<small>Remove anything incorrect</small></span></a>
+          <a href="#differential-heading"><b>3</b><span>Review candidates<small>Inspect why each matched</small></span></a>
         </nav>
         <p id="case-status" class="case-status" role="status" aria-live="polite">Your note stays on this computer. Try an example or enter your own findings.</p>
         <div id="demo-confirm" class="demo-confirm" hidden><p>Load this example in place of your current note?</p><button id="demo-replace" type="button">Load example</button><button id="demo-cancel" type="button">Keep my note</button></div>
@@ -162,30 +162,35 @@
             <header class="panel-heading">
               <div>
                 <p class="section-label">01 / Input</p>
-                <h2>Patient presentation</h2>
+                <h2>Describe the case</h2>
               </div>
               <span class="panel-state">Draft</span>
             </header>
 
-            <div class="field primary-field">
-              <div class="label-row">
-                <label for="clinical-text">Clinical note</label>
-                <span id="note-count">0 / 10,000</span>
-              </div>
-              <textarea id="clinical-text" maxlength="10000" autocomplete="off" placeholder="Describe the patient presentation…"></textarea>
-              <p class="field-hint">Describe observed findings, separated by commas or sentences.</p>
-              <details class="inline-help"><summary>What makes a useful note?</summary><p>Use specific observations such as “joint pain, skin laxity, hypertelorism.” The extractor attempts to filter phrases like “no seizures” or “possible ataxia”; always review the extracted terms.</p></details>
+            <div class="entry-guide" aria-label="How to enter a case">
+              <span>Start here</span>
+              <div><b>1</b><p><strong>Write observed findings</strong>Use symptoms, measurements, or clinical signs—not a suspected diagnosis.</p></div>
+              <div><b>2</b><p><strong>Keep it specific</strong>For example: “joint pain, skin laxity, and wide-set eyes.”</p></div>
+              <div><b>3</b><p><strong>Review the output</strong>You can remove any extracted term that does not fit.</p></div>
             </div>
 
-            <div class="field-grid">
-              <div class="field">
-                <label for="additional-text">Add finding</label>
-                <input id="additional-text" type="text" maxlength="10000" autocomplete="off" placeholder="e.g. developmental delay">
+            <div class="field primary-field">
+              <div class="label-row">
+                <label for="clinical-text">Observed findings</label>
+                <span id="note-count">0 / 10,000</span>
               </div>
-              <div class="field">
-                <label for="absent-text">Mark absent</label>
-                <input id="absent-text" type="text" maxlength="10000" autocomplete="off" placeholder="e.g. seizures">
+              <textarea id="clinical-text" maxlength="10000" autocomplete="off" placeholder="Example: Patient has joint pain, skin laxity, and wide-set eyes."></textarea>
+              <p class="field-hint">Put every observed finding here. Commas or complete sentences both work.</p>
+            </div>
+
+            <input id="additional-text" type="hidden" value="">
+            <div class="field absent-field">
+              <div class="label-row">
+                <label for="absent-text">Absent findings <small>optional</small></label>
+                <span>Only if explicitly checked</span>
               </div>
+              <input id="absent-text" type="text" maxlength="10000" autocomplete="off" placeholder="Example: seizures, hearing loss">
+              <p class="field-hint">Use this only for findings confirmed not to be present. These can lower mismatched candidate scores.</p>
             </div>
 
             <details class="context-card">
@@ -220,7 +225,7 @@
 
             <div class="action-row">
               <button id="analyze-button" class="primary-button" type="button" title="Analyze note (Ctrl/Command + Enter)">
-                <span>Find candidate profiles</span>
+                <span>Extract and compare</span>
                 <span class="run-icon" aria-hidden="true">↗</span>
                 <kbd>⌘ ↵</kbd>
               </button>
@@ -409,7 +414,7 @@
     </section>
 
     <footer class="site-footer">
-      <span>Clinical Analysis</span>
+      <span>Notice</span>
       <span>Built for the Congressional App Challenge</span>
       <span>Decision support — not a medical diagnosis</span>
     </footer>

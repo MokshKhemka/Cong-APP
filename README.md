@@ -1,6 +1,6 @@
-# Clinical Analysis MVP
+# Notice
 
-A local Flask prototype that extracts Human Phenotype Ontology (HPO) terms from clinical text and ranks matching disease profiles from HPO annotations.
+Notice is a local Flask prototype that extracts Human Phenotype Ontology (HPO) terms from clinical text and ranks matching disease profiles from HPO annotations.
 
 ## How it works
 
