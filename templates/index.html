@@ -90,6 +90,16 @@
       </div>
     </section>
 
+    <section class="feature-overview" aria-labelledby="feature-overview-title">
+      <header><p class="section-label">What Notice can do</p><h2 id="feature-overview-title">Four useful outcomes. No mystery.</h2></header>
+      <div>
+        <article><span>01</span><strong>Standardize a note</strong><p>Translate plain-language observations into recognized HPO terms.</p></article>
+        <article><span>02</span><strong>Catch extraction mistakes</strong><p>Review and remove incorrect terms before they affect the ranking.</p></article>
+        <article><span>03</span><strong>Compare candidate profiles</strong><p>See matches, gaps, conflicts, and weighted similarity side by side.</p></article>
+        <article><span>04</span><strong>Prepare the next conversation</strong><p>Export a brief and generate focused questions for clinical review.</p></article>
+      </div>
+    </section>
+
     <div class="app-layout">
       <aside class="sidebar">
         <div class="side-section">
@@ -132,8 +142,8 @@
         <header class="content-header">
           <div>
             <p class="breadcrumb"><span>Workspace</span><i>/</i>New case</p>
-            <h2>Start with what you observe.</h2>
-            <p>One note box, one review step, then an evidence-backed shortlist.</p>
+            <h2>Three screens. One task at a time.</h2>
+            <p>Enter the findings, verify the translation, then inspect the evidence.</p>
           </div>
           <div class="content-actions">
             <span class="privacy-state"><i></i> On-device</span>
@@ -144,7 +154,7 @@
         </header>
 
         <div class="demo-shelf">
-          <div><span class="section-label">A place to start</span><strong>Explore a fictional case</strong></div>
+          <div><span class="section-label">Need an example?</span><strong>Load a fictional case</strong></div>
           <button type="button" data-demo="connective"><span>01</span> Connective tissue <b>↗</b></button>
           <button type="button" data-demo="neuro"><span>02</span> Neurological <b>↗</b></button>
           <button type="button" data-demo="skeletal"><span>03</span> Skeletal <b>↗</b></button>
@@ -174,10 +184,10 @@
             </header>
 
             <div class="entry-guide" aria-label="How to enter a case">
-              <span>Start here</span>
-              <div><b>1</b><p><strong>Write observed findings</strong>Use symptoms, measurements, or clinical signs—not a suspected diagnosis.</p></div>
-              <div><b>2</b><p><strong>Keep it specific</strong>For example: “joint pain, skin laxity, and wide-set eyes.”</p></div>
-              <div><b>3</b><p><strong>Review the output</strong>You can remove any extracted term that does not fit.</p></div>
+              <span>Step 1 — do this now</span>
+              <div><b>✓</b><p><strong>Write only what was observed</strong>Use symptoms, measurements, or clinical signs—not a suspected diagnosis.</p></div>
+              <div><b>✓</b><p><strong>Put every observed finding in this one box</strong>For example: “joint pain, skin laxity, and wide-set eyes.”</p></div>
+              <div><b>→</b><p><strong>Then press Continue to review</strong>Notice will translate the note; you will approve the terms on the next screen.</p></div>
             </div>
 
             <div class="field primary-field">
@@ -266,6 +276,8 @@
               </details>
             </div>
 
+            <div class="next-up"><span>What happens next</span><p>Notice will apply your corrections, optional absences, and context—then show ranked candidates with visible evidence.</p></div>
+
             <div class="wizard-actions">
               <button type="button" class="wizard-back" data-wizard-go="0">← Back to note</button>
               <button id="review-continue" type="button" class="primary-button"><span>See candidate profiles</span><span aria-hidden="true">→</span></button>
@@ -281,6 +293,7 @@
               <span class="panel-state waiting">Waiting</span>
             </header>
             <div class="results-back"><button type="button" data-wizard-go="1">← Back to findings</button><span>Step 3 of 3</span></div>
+            <div class="result-instruction"><b>Start here</b><p>Open the first candidate to see why it ranked, or use <strong>Compare top 3</strong> for a side-by-side evidence view. Scores are similarity—not probability.</p></div>
             <div id="result-tools" class="result-tools" hidden>
               <div class="view-switch" role="group" aria-label="Results view"><button id="view-list" type="button" aria-pressed="true">Ranked list</button><button id="view-compare" type="button" aria-pressed="false">Compare top 3</button></div>
               <details class="inline-help"><summary>How are scores calculated?</summary><p>Scores measure weighted overlap with annotated phenotype profiles. They are not the probability of having a disease. Higher means closer overlap; frequency weights can push scores above 100. Rare findings carry more weight; absent findings and context can reduce a score. This heuristic prototype has not been clinically validated.</p></details>
@@ -391,7 +404,7 @@
           <p class="section-label">04 / More tools</p>
           <h2 id="tools-title">Useful before and after the analysis.</h2>
         </div>
-        <p>Two focused utilities make the ontology easier to explore and help first-time users build a clean case without guessing the right format.</p>
+        <p>Prepare a cleaner note, explore the ontology, build a case, and turn results into useful questions for the next clinical review.</p>
       </header>
 
       <div class="tool-grid">
@@ -438,13 +451,37 @@
           <button id="builder-use" class="builder-use" type="button" disabled>Send draft to workspace <span aria-hidden="true">↗</span></button>
         </article>
 
+        <article class="tool-card note-check-tool reveal-item">
+          <header><span class="tool-index">03</span><div><p class="section-label">Before analysis</p><h3>Note readiness check</h3></div></header>
+          <p>Check whether a note is specific enough and catch language that belongs in the absent-findings field.</p>
+          <label class="sr-only" for="note-check-text">Clinical note to check</label>
+          <textarea id="note-check-text" maxlength="10000" placeholder="Paste a note, or check the note already in the workspace."></textarea>
+          <div class="note-check-actions">
+            <button id="note-check-run" type="button">Check this note <span aria-hidden="true">→</span></button>
+            <button id="note-check-current" type="button">Use workspace note</button>
+          </div>
+          <div id="note-check-results" class="note-check-results" aria-live="polite">
+            <p>Checks for multiple specific findings, uncertainty language, and negatives that should be reviewed separately.</p>
+          </div>
+          <button id="note-check-send" class="note-check-send" type="button" disabled>Send checked note to workspace <span aria-hidden="true">↗</span></button>
+        </article>
+
         <article class="tool-card toolkit-tool reveal-item">
-          <header><span class="tool-index">03</span><div><p class="section-label">Review kit</p><h3>Turn results into next steps</h3></div></header>
+          <header><span class="tool-index">04</span><div><p class="section-label">After analysis</p><h3>Turn results into next steps</h3></div></header>
           <p>Once a case runs, the workspace unlocks tools built for explanation—not just a ranked list.</p>
           <div class="toolkit-list">
-            <a href="#analysis"><b>Compare the top three</b><span>See which case findings each profile explains. ↗</span></a>
-            <a href="#analysis"><b>Inspect scoring evidence</b><span>Review weights, missing findings, and conflicts. ↗</span></a>
-            <a href="#analysis"><b>Generate a review brief</b><span>Copy or download an auditable case summary. ↗</span></a>
+            <a href="#analysis" data-results-action="compare"><b>Compare the top three</b><span>See which case findings each profile explains. ↗</span></a>
+            <a href="#analysis" data-results-action="evidence"><b>Inspect scoring evidence</b><span>Review weights, missing findings, and conflicts. ↗</span></a>
+            <a href="#analysis" data-results-action="brief"><b>Generate a review brief</b><span>Copy or download an auditable case summary. ↗</span></a>
+          </div>
+          <div class="question-builder">
+            <div><strong>Clinician-question builder</strong><span id="question-hint">Run an analysis to unlock focused questions.</span></div>
+            <button id="question-build" type="button" disabled>Build questions <span aria-hidden="true">→</span></button>
+          </div>
+          <div id="question-output" class="question-output" hidden>
+            <ol id="question-list"></ol>
+            <button id="question-copy" type="button">Copy questions</button>
+            <span id="question-status" role="status" aria-live="polite"></span>
           </div>
           <button type="button" class="tool-demo" data-demo="neuro">Run the neurological demo <span aria-hidden="true">↗</span></button>
         </article>

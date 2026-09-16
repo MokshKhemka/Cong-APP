@@ -29,6 +29,13 @@ const guidedDemoIndex = document.querySelector('#guided-demo-index');
 const guidedDemoTitle = document.querySelector('#guided-demo-title');
 const guidedDemoCopy = document.querySelector('#guided-demo-copy');
 const guidedDemoNext = document.querySelector('#guided-demo-next');
+const noteCheckText = document.querySelector('#note-check-text');
+const noteCheckResults = document.querySelector('#note-check-results');
+const noteCheckSend = document.querySelector('#note-check-send');
+const questionBuild = document.querySelector('#question-build');
+const questionHint = document.querySelector('#question-hint');
+const questionOutput = document.querySelector('#question-output');
+const questionList = document.querySelector('#question-list');
 
 const excludedTermIds = new Set();
 let latestAnalysis = null;
@@ -36,6 +43,7 @@ let latestInput = null;
 let pendingDemo = null;
 let isStale = false;
 let guidedDemoActive = false;
+let reviewConfirmed = false;
 const caseStatus = document.querySelector('#case-status');
 const resultTools = document.querySelector('#result-tools');
 const comparison = document.querySelector('#comparison');
@@ -61,7 +69,7 @@ function setStep(index, {scroll = false} = {}) {
 
 function updateWizardAccess() {
   wizardControls[1].disabled = !latestAnalysis;
-  wizardControls[2].disabled = !latestAnalysis?.diseases.length || isStale;
+  wizardControls[2].disabled = !reviewConfirmed || !latestAnalysis?.diseases.length || isStale;
 }
 
 function renderGuidedDemo(index) {
@@ -104,6 +112,7 @@ function renderComparison(data) {
 
 function markEdited() {
   document.querySelector('#note-count').textContent = `${textInput.value.length.toLocaleString()} / 10,000`;
+  reviewConfirmed = false;
   setStep(0);
   if (!latestAnalysis) {
     updateWizardAccess();
@@ -120,6 +129,7 @@ function markEdited() {
 
 function markReviewEdited() {
   if (!latestAnalysis) return;
+  reviewConfirmed = false;
   isStale = true;
   exportButton.hidden = true;
   feedback.hidden = true;
@@ -348,6 +358,100 @@ builderUse?.addEventListener('click', () => {
   setTimeout(() => textInput.focus({preventScroll: true}), reducedMotion.matches ? 0 : 500);
 });
 
+function runNoteCheck() {
+  const text = noteCheckText.value.trim();
+  if (!text) {
+    noteCheckResults.innerHTML = '<p class="note-check-message">Paste a note first, or use the workspace note.</p>';
+    noteCheckSend.disabled = true;
+    return;
+  }
+
+  const phrases = text.split(/[,;\n.]|\band\b/i).map(item => item.trim()).filter(item => item.length > 2);
+  const hasUncertainty = /\b(possible|possibly|maybe|suspected|might|could be|rule out)\b/i.test(text);
+  const hasNegation = /\b(no|not|without|denies|negative for|absent)\b/i.test(text);
+  const checks = [
+    {pass: phrases.length >= 2, title: `${phrases.length} potential finding${phrases.length === 1 ? '' : 's'} detected`, copy: phrases.length >= 2 ? 'There is enough detail to attempt phenotype extraction.' : 'Add another specific observation if one is available.'},
+    {pass: !hasUncertainty, title: hasUncertainty ? 'Uncertain language found' : 'No uncertain language detected', copy: hasUncertainty ? 'Notice ignores some phrases such as “possible” or “suspected.” Record confirmed observations when possible.' : 'The note reads as observed findings rather than guesses.'},
+    {pass: !hasNegation, title: hasNegation ? 'Negative language needs review' : 'No embedded negatives detected', copy: hasNegation ? 'Move findings confirmed not present into the separate absent-findings field during step 2.' : 'No obvious absent findings are mixed into the observed note.'},
+  ];
+  noteCheckResults.innerHTML = checks.map(check => `<div class="note-check-row ${check.pass ? 'pass' : 'warn'}"><b>${check.pass ? '✓' : '!'}</b><span><strong>${escapeHtml(check.title)}</strong>${escapeHtml(check.copy)}</span></div>`).join('');
+  noteCheckSend.disabled = false;
+}
+
+document.querySelector('#note-check-run')?.addEventListener('click', runNoteCheck);
+document.querySelector('#note-check-current')?.addEventListener('click', () => {
+  noteCheckText.value = textInput.value;
+  runNoteCheck();
+});
+noteCheckText?.addEventListener('input', () => { noteCheckSend.disabled = !noteCheckText.value.trim(); });
+noteCheckSend?.addEventListener('click', () => {
+  textInput.value = noteCheckText.value.trim();
+  excludedTermIds.clear();
+  markEdited();
+  history.pushState(null, '', '#analysis');
+  setStep(0);
+  document.querySelector('#analysis').scrollIntoView({behavior: reducedMotion.matches ? 'instant' : 'smooth'});
+});
+
+function refreshQuestionBuilder() {
+  const top = reviewConfirmed ? latestAnalysis?.diseases?.[0] : null;
+  questionBuild.disabled = !top;
+  questionHint.textContent = top
+    ? `Ready to build questions around ${top.name}.`
+    : 'Run an analysis to unlock focused questions.';
+  questionOutput.hidden = true;
+  document.querySelector('#question-status').textContent = '';
+}
+
+questionBuild?.addEventListener('click', () => {
+  const top = latestAnalysis?.diseases?.[0];
+  if (!top) return;
+  const missing = (top.missing_term_ids || []).slice(0, 2).map(term => term.name);
+  const questions = [
+    `Which findings would most help distinguish ${top.name} from the other candidates?`,
+    missing.length
+      ? `Should ${listPhrase(missing)} be specifically assessed or documented?`
+      : 'Are there additional findings that should be specifically assessed or documented?',
+    'What testing or specialist review would be appropriate before drawing any conclusion?',
+    'Could family history, age of onset, or symptom progression materially change this ranking?',
+    `Which alternative candidate best explains findings that ${top.name} may not account for?`,
+  ];
+  questionList.innerHTML = questions.map(question => `<li>${escapeHtml(question)}</li>`).join('');
+  questionOutput.hidden = false;
+});
+
+document.querySelector('#question-copy')?.addEventListener('click', async () => {
+  const text = [...questionList.querySelectorAll('li')].map((item, index) => `${index + 1}. ${item.textContent}`).join('\n');
+  try {
+    await navigator.clipboard.writeText(text);
+    document.querySelector('#question-status').textContent = 'Questions copied.';
+  } catch {
+    document.querySelector('#question-status').textContent = 'Copy unavailable in this browser.';
+  }
+});
+
+document.addEventListener('click', event => {
+  const action = event.target.closest('[data-results-action]')?.dataset.resultsAction;
+  if (!action) return;
+  event.preventDefault();
+  if (!reviewConfirmed || !latestAnalysis) {
+    setStep(latestAnalysis ? 1 : 0);
+    caseStatus.textContent = 'Complete all three workspace steps to unlock the review tools.';
+    return;
+  }
+  if (action === 'brief') {
+    exportButton.click();
+    return;
+  }
+  setStep(2, {scroll: true});
+  if (action === 'compare') setResultsView(true);
+  if (action === 'evidence') {
+    setResultsView(false);
+    const first = diseaseResults.querySelector('.disease');
+    if (first) first.open = true;
+  }
+});
+
 function showError(element, message) {
   element.className = 'results empty';
   element.innerHTML = `<div class="error-state"><span aria-hidden="true">!</span><div><strong>Something needs attention</strong><p>${escapeHtml(message)}</p></div></div>`;
@@ -366,6 +470,7 @@ function setLoading(isLoading) {
 function resetSecondaryResults() {
   latestAnalysis = null;
   latestInput = null;
+  reviewConfirmed = false;
   resultTools.hidden = true;
   setResultsView(false);
   comparison.replaceChildren();
@@ -375,6 +480,7 @@ function resetSecondaryResults() {
   exportButton.hidden = true;
   profileResults.replaceChildren();
   profileSelect.innerHTML = '<option value="">Choose a candidate to compare…</option>';
+  refreshQuestionBuilder();
 }
 
 requestJson('/api/health')
@@ -521,6 +627,8 @@ async function analyze(destination = 1) {
     latestAnalysis = data;
     latestInput = {text, additional: additionalText.value, absent: absentText.value, age: patientAge.value, sex: patientSex.value, refractory: refractory.checked};
     isStale = false;
+    reviewConfirmed = destination === 2;
+    refreshQuestionBuilder();
     renderTerms(data.terms);
     renderDiseases(data.diseases, data.hpoa_available);
     renderSignals(data);
