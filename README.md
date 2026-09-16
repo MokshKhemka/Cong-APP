@@ -16,13 +16,13 @@ Ontology matching uses a token index, and disease frequency statistics are preco
 
 Use one of the fictional case buttons to run a connective-tissue, neurological, or skeletal example. Existing input is preserved until you confirm loading another example. The analysis workspace is a three-screen flow: enter observed findings, review the extracted HPO terms and optional absent findings, then inspect candidate profiles. Each screen explains the current task and what happens next.
 
-The **60-sec demo** adds contextual guidance to the connective-tissue case, walks the reviewer from standardized findings to candidate evidence, and finishes with the top-three comparison. The app also includes an in-product engineering overview of its local parser, token index, weighted ranking engine, and evidence layer.
+The fictional examples load directly into the same three-step workflow as any other case. The app also includes an in-product engineering overview of its local parser, token index, weighted ranking engine, and evidence layer.
 
 Review the extracted HPO findings and remove incorrect matches to recompute the ranking. **Compare top 3** shows a finding-by-finding matrix and conflicts for the leading profiles. An unlisted annotation does not rule out a disease. Scores are weighted similarity values, not probabilities; weighting can produce values above 100.
 
 **Review brief** opens a plain-text snapshot of the analyzed input, findings, candidates, and research links, with copy and download controls. Copy also provides a fallback for embedded browsers that do not support file downloads. Editing a case marks displayed results as outdated and hides export until a new analysis succeeds. Notes are not saved in browser storage.
 
-The **More tools** section includes an HPO term explorer, a guided case builder, a note-readiness check for vague or negative wording, and a clinician-question builder that turns the leading candidate and evidence gaps into focused follow-up questions. The post-analysis shortcuts open the comparison, scoring evidence, or review brief directly.
+The **More tools** section includes an HPO term explorer that can add a result directly to a case, a guided case builder, and a pinned shortlist for comparing selected candidates. The post-analysis shortcuts open the top-three comparison, scoring evidence, or review brief directly.
 
 The extraction and ranking are heuristic. They are useful for producing a shortlist for review, but they are not a validated diagnostic model.
 

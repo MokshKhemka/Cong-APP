@@ -24,25 +24,16 @@ const builderUse = document.querySelector('#builder-use');
 const reviewContinue = document.querySelector('#review-continue');
 const wizardPages = [...document.querySelectorAll('[data-wizard-page]')];
 const wizardControls = [...document.querySelectorAll('.workflow [data-wizard-go]')];
-const guidedDemo = document.querySelector('#guided-demo');
-const guidedDemoIndex = document.querySelector('#guided-demo-index');
-const guidedDemoTitle = document.querySelector('#guided-demo-title');
-const guidedDemoCopy = document.querySelector('#guided-demo-copy');
-const guidedDemoNext = document.querySelector('#guided-demo-next');
-const noteCheckText = document.querySelector('#note-check-text');
-const noteCheckResults = document.querySelector('#note-check-results');
-const noteCheckSend = document.querySelector('#note-check-send');
-const questionBuild = document.querySelector('#question-build');
-const questionHint = document.querySelector('#question-hint');
-const questionOutput = document.querySelector('#question-output');
-const questionList = document.querySelector('#question-list');
+const shortlistCount = document.querySelector('#shortlist-count');
+const shortlistClear = document.querySelector('#shortlist-clear');
+const shortlistResults = document.querySelector('#shortlist-results');
 
 const excludedTermIds = new Set();
+const pinnedDiseaseIds = new Set();
 let latestAnalysis = null;
 let latestInput = null;
 let pendingDemo = null;
 let isStale = false;
-let guidedDemoActive = false;
 let reviewConfirmed = false;
 const caseStatus = document.querySelector('#case-status');
 const resultTools = document.querySelector('#result-tools');
@@ -60,37 +51,14 @@ function setStep(index, {scroll = false} = {}) {
     if (i === index) control.setAttribute('aria-current', 'step');
     else control.removeAttribute('aria-current');
   });
-  renderGuidedDemo(index);
   if (scroll) {
-    const scrollTarget = !guidedDemo.hidden ? guidedDemo : document.querySelector('.workspace');
-    scrollTarget.scrollIntoView({behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start'});
+    document.querySelector('.workspace').scrollIntoView({behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start'});
   }
 }
 
 function updateWizardAccess() {
   wizardControls[1].disabled = !latestAnalysis;
   wizardControls[2].disabled = !reviewConfirmed || !latestAnalysis?.diseases.length || isStale;
-}
-
-function renderGuidedDemo(index) {
-  if (!guidedDemoActive || !latestAnalysis || index === 0) {
-    guidedDemo.hidden = true;
-    return;
-  }
-
-  guidedDemo.hidden = false;
-  guidedDemoNext.hidden = false;
-  if (index === 1) {
-    guidedDemoIndex.textContent = 'Demo 1 / 2';
-    guidedDemoTitle.textContent = 'Notice made the note reviewable.';
-    guidedDemoCopy.textContent = `${latestAnalysis.terms.length} phrases were translated into standardized HPO terms. Check them, then continue.`;
-    guidedDemoNext.innerHTML = 'See the candidate evidence <span aria-hidden="true">→</span>';
-  } else {
-    guidedDemoIndex.textContent = 'Demo 2 / 2';
-    guidedDemoTitle.textContent = 'The shortlist shows its work.';
-    guidedDemoCopy.textContent = `${latestAnalysis.diseases.length} candidate profiles are ranked by similarity—not probability. Open a result or compare the top three.`;
-    guidedDemoNext.innerHTML = 'Compare the top three <span aria-hidden="true">→</span>';
-  }
 }
 
 function setResultsView(compare) {
@@ -113,6 +81,8 @@ function renderComparison(data) {
 function markEdited() {
   document.querySelector('#note-count').textContent = `${textInput.value.length.toLocaleString()} / 10,000`;
   reviewConfirmed = false;
+  pinnedDiseaseIds.clear();
+  renderPinnedShortlist();
   setStep(0);
   if (!latestAnalysis) {
     updateWizardAccess();
@@ -130,6 +100,8 @@ function markEdited() {
 function markReviewEdited() {
   if (!latestAnalysis) return;
   reviewConfirmed = false;
+  pinnedDiseaseIds.clear();
+  renderPinnedShortlist();
   isStale = true;
   exportButton.hidden = true;
   feedback.hidden = true;
@@ -159,7 +131,6 @@ async function loadDemo(key) {
 document.addEventListener('click', event => {
   const button = event.target.closest('[data-demo]');
   if (!button || analyzeButton.disabled) return;
-  guidedDemoActive = button.hasAttribute('data-guided-demo');
   const key = button.dataset.demo;
   if (!demos[key]) return;
   if (formControls.some(control => control.type === 'checkbox' ? control.checked : control === patientSex ? control.value !== 'unknown' : control.value.trim())) {
@@ -170,7 +141,7 @@ document.addEventListener('click', event => {
   } else loadDemo(key);
 });
 document.querySelector('#demo-replace').addEventListener('click', () => { if (pendingDemo && !analyzeButton.disabled) loadDemo(pendingDemo); });
-document.querySelector('#demo-cancel').addEventListener('click', () => { pendingDemo = null; guidedDemoActive = false; document.querySelector('#demo-confirm').hidden = true; });
+document.querySelector('#demo-cancel').addEventListener('click', () => { pendingDemo = null; document.querySelector('#demo-confirm').hidden = true; });
 document.querySelector('#view-list').addEventListener('click', () => setResultsView(false));
 document.querySelector('#view-compare').addEventListener('click', () => setResultsView(true));
 textInput.addEventListener('input', markEdited);
@@ -287,7 +258,7 @@ async function searchHpo() {
   try {
     const data = await requestJson(`/api/phenotypes/search?q=${encodeURIComponent(query)}`);
     hpoResults.innerHTML = data.results.length
-      ? data.results.map(term => `<article class="hpo-result"><strong>${escapeHtml(term.name)}</strong><code>${escapeHtml(term.id)}</code><small>${Math.round(term.score)}% match</small></article>`).join('')
+      ? data.results.map(term => `<article class="hpo-result"><strong>${escapeHtml(term.name)}</strong><code>${escapeHtml(term.id)}</code><small>${Math.round(term.score)}% match</small><button type="button" data-add-finding="${escapeHtml(term.name)}">Add to case +</button></article>`).join('')
       : '<p class="hpo-message">No confident match. Try a shorter, more specific phenotype phrase.</p>';
   } catch (error) {
     hpoResults.innerHTML = `<p class="hpo-message">${escapeHtml(error.message)}</p>`;
@@ -302,6 +273,17 @@ hpoForm?.addEventListener('submit', event => {
   searchHpo();
 });
 hpoResults?.addEventListener('click', event => {
+  const addButton = event.target.closest('[data-add-finding]');
+  if (addButton) {
+    const finding = addButton.dataset.addFinding;
+    const current = textInput.value.trim().replace(/[.\s]+$/, '');
+    textInput.value = current ? `${current}, ${finding}.` : `Patient has ${finding}.`;
+    excludedTermIds.clear();
+    markEdited();
+    addButton.textContent = 'Added ✓';
+    addButton.disabled = true;
+    return;
+  }
   const suggestion = event.target.closest('[data-hpo-query]');
   if (!suggestion) return;
   hpoQuery.value = suggestion.dataset.hpoQuery;
@@ -358,76 +340,29 @@ builderUse?.addEventListener('click', () => {
   setTimeout(() => textInput.focus({preventScroll: true}), reducedMotion.matches ? 0 : 500);
 });
 
-function runNoteCheck() {
-  const text = noteCheckText.value.trim();
-  if (!text) {
-    noteCheckResults.innerHTML = '<p class="note-check-message">Paste a note first, or use the workspace note.</p>';
-    noteCheckSend.disabled = true;
+function renderPinnedShortlist() {
+  const candidates = (latestAnalysis?.diseases || []).filter(disease => pinnedDiseaseIds.has(disease.id));
+  shortlistCount.textContent = `${candidates.length} pinned`;
+  shortlistClear.hidden = !candidates.length;
+  if (!candidates.length) {
+    shortlistResults.innerHTML = '<div class="shortlist-empty"><b>Nothing pinned yet.</b><span>Run an analysis, open a candidate, and choose “Pin to shortlist.”</span><a href="#analysis">Open the workspace →</a></div>';
     return;
   }
 
-  const phrases = text.split(/[,;\n.]|\band\b/i).map(item => item.trim()).filter(item => item.length > 2);
-  const hasUncertainty = /\b(possible|possibly|maybe|suspected|might|could be|rule out)\b/i.test(text);
-  const hasNegation = /\b(no|not|without|denies|negative for|absent)\b/i.test(text);
-  const checks = [
-    {pass: phrases.length >= 2, title: `${phrases.length} potential finding${phrases.length === 1 ? '' : 's'} detected`, copy: phrases.length >= 2 ? 'There is enough detail to attempt phenotype extraction.' : 'Add another specific observation if one is available.'},
-    {pass: !hasUncertainty, title: hasUncertainty ? 'Uncertain language found' : 'No uncertain language detected', copy: hasUncertainty ? 'Notice ignores some phrases such as “possible” or “suspected.” Record confirmed observations when possible.' : 'The note reads as observed findings rather than guesses.'},
-    {pass: !hasNegation, title: hasNegation ? 'Negative language needs review' : 'No embedded negatives detected', copy: hasNegation ? 'Move findings confirmed not present into the separate absent-findings field during step 2.' : 'No obvious absent findings are mixed into the observed note.'},
-  ];
-  noteCheckResults.innerHTML = checks.map(check => `<div class="note-check-row ${check.pass ? 'pass' : 'warn'}"><b>${check.pass ? '✓' : '!'}</b><span><strong>${escapeHtml(check.title)}</strong>${escapeHtml(check.copy)}</span></div>`).join('');
-  noteCheckSend.disabled = false;
+  shortlistResults.innerHTML = `<div class="shortlist-grid">${candidates.map((disease, index) => {
+    const missing = (disease.missing_term_ids || []).slice(0, 3).map(term => term.name).join(', ') || 'None listed';
+    const conflicts = disease.flags?.join(', ') || 'None flagged';
+    return `<article><span>${String(index + 1).padStart(2, '0')}</span><strong>${escapeHtml(disease.name)}</strong><code>${escapeHtml(disease.id)}</code><dl><div><dt>Similarity</dt><dd>${(disease.score * 100).toFixed(1)}</dd></div><div><dt>Matched</dt><dd>${disease.matched_terms.length}</dd></div></dl><p><b>Check next</b>${escapeHtml(missing)}</p><p><b>Conflicts</b>${escapeHtml(conflicts)}</p><button type="button" data-pin-candidate="${escapeHtml(disease.id)}">Remove</button></article>`;
+  }).join('')}</div>`;
 }
 
-document.querySelector('#note-check-run')?.addEventListener('click', runNoteCheck);
-document.querySelector('#note-check-current')?.addEventListener('click', () => {
-  noteCheckText.value = textInput.value;
-  runNoteCheck();
-});
-noteCheckText?.addEventListener('input', () => { noteCheckSend.disabled = !noteCheckText.value.trim(); });
-noteCheckSend?.addEventListener('click', () => {
-  textInput.value = noteCheckText.value.trim();
-  excludedTermIds.clear();
-  markEdited();
-  history.pushState(null, '', '#analysis');
-  setStep(0);
-  document.querySelector('#analysis').scrollIntoView({behavior: reducedMotion.matches ? 'instant' : 'smooth'});
-});
-
-function refreshQuestionBuilder() {
-  const top = reviewConfirmed ? latestAnalysis?.diseases?.[0] : null;
-  questionBuild.disabled = !top;
-  questionHint.textContent = top
-    ? `Ready to build questions around ${top.name}.`
-    : 'Run an analysis to unlock focused questions.';
-  questionOutput.hidden = true;
-  document.querySelector('#question-status').textContent = '';
-}
-
-questionBuild?.addEventListener('click', () => {
-  const top = latestAnalysis?.diseases?.[0];
-  if (!top) return;
-  const missing = (top.missing_term_ids || []).slice(0, 2).map(term => term.name);
-  const questions = [
-    `Which findings would most help distinguish ${top.name} from the other candidates?`,
-    missing.length
-      ? `Should ${listPhrase(missing)} be specifically assessed or documented?`
-      : 'Are there additional findings that should be specifically assessed or documented?',
-    'What testing or specialist review would be appropriate before drawing any conclusion?',
-    'Could family history, age of onset, or symptom progression materially change this ranking?',
-    `Which alternative candidate best explains findings that ${top.name} may not account for?`,
-  ];
-  questionList.innerHTML = questions.map(question => `<li>${escapeHtml(question)}</li>`).join('');
-  questionOutput.hidden = false;
-});
-
-document.querySelector('#question-copy')?.addEventListener('click', async () => {
-  const text = [...questionList.querySelectorAll('li')].map((item, index) => `${index + 1}. ${item.textContent}`).join('\n');
-  try {
-    await navigator.clipboard.writeText(text);
-    document.querySelector('#question-status').textContent = 'Questions copied.';
-  } catch {
-    document.querySelector('#question-status').textContent = 'Copy unavailable in this browser.';
-  }
+shortlistClear?.addEventListener('click', () => {
+  pinnedDiseaseIds.clear();
+  renderPinnedShortlist();
+  diseaseResults.querySelectorAll('[data-pin-candidate]').forEach(button => {
+    button.setAttribute('aria-pressed', 'false');
+    button.textContent = 'Pin to shortlist +';
+  });
 });
 
 document.addEventListener('click', event => {
@@ -471,6 +406,7 @@ function resetSecondaryResults() {
   latestAnalysis = null;
   latestInput = null;
   reviewConfirmed = false;
+  pinnedDiseaseIds.clear();
   resultTools.hidden = true;
   setResultsView(false);
   comparison.replaceChildren();
@@ -480,7 +416,7 @@ function resetSecondaryResults() {
   exportButton.hidden = true;
   profileResults.replaceChildren();
   profileSelect.innerHTML = '<option value="">Choose a candidate to compare…</option>';
-  refreshQuestionBuilder();
+  renderPinnedShortlist();
 }
 
 requestJson('/api/health')
@@ -556,6 +492,7 @@ function renderDiseases(diseases, hpoaAvailable) {
           <div class="resource-links">
             <a class="resource-link" href="${escapeHtml(disease.resources.GARD)}" target="_blank" rel="noreferrer">GARD <span aria-hidden="true">↗</span></a>
             <a class="resource-link" href="${escapeHtml(disease.resources.NORD)}" target="_blank" rel="noreferrer">NORD <span aria-hidden="true">↗</span></a>
+            <button class="pin-candidate" type="button" data-pin-candidate="${escapeHtml(disease.id)}" aria-pressed="${pinnedDiseaseIds.has(disease.id)}">${pinnedDiseaseIds.has(disease.id) ? 'Pinned ✓' : 'Pin to shortlist +'}</button>
           </div>
         </div>
       </details>`;
@@ -628,7 +565,6 @@ async function analyze(destination = 1) {
     latestInput = {text, additional: additionalText.value, absent: absentText.value, age: patientAge.value, sex: patientSex.value, refractory: refractory.checked};
     isStale = false;
     reviewConfirmed = destination === 2;
-    refreshQuestionBuilder();
     renderTerms(data.terms);
     renderDiseases(data.diseases, data.hpoa_available);
     renderSignals(data);
@@ -663,22 +599,6 @@ async function analyze(destination = 1) {
 
 analyzeButton.addEventListener('click', () => analyze(1));
 reviewContinue.addEventListener('click', () => analyze(2));
-guidedDemoNext.addEventListener('click', () => {
-  const currentStep = Number(document.querySelector('.workflow [aria-current="step"]')?.dataset.wizardGo || 0);
-  if (currentStep === 1) {
-    analyze(2);
-    return;
-  }
-  document.querySelector('#view-compare').click();
-  guidedDemoNext.hidden = true;
-  guidedDemoTitle.textContent = 'Side-by-side evidence is open.';
-  guidedDemoCopy.textContent = 'Each column shows which patient findings the leading profiles explain and where annotations are missing.';
-  document.querySelector('#comparison').scrollIntoView({behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start'});
-});
-document.querySelector('#guided-demo-close').addEventListener('click', () => {
-  guidedDemoActive = false;
-  guidedDemo.hidden = true;
-});
 textInput.addEventListener('keydown', event => {
   if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
     event.preventDefault();
@@ -692,6 +612,31 @@ termResults.addEventListener('click', event => {
   if (!button) return;
   excludedTermIds.add(button.dataset.removeTerm);
   analyze(1);
+});
+
+diseaseResults.addEventListener('click', event => {
+  const button = event.target.closest('[data-pin-candidate]');
+  if (!button) return;
+  const id = button.dataset.pinCandidate;
+  if (pinnedDiseaseIds.has(id)) pinnedDiseaseIds.delete(id);
+  else pinnedDiseaseIds.add(id);
+  const pinned = pinnedDiseaseIds.has(id);
+  button.setAttribute('aria-pressed', String(pinned));
+  button.textContent = pinned ? 'Pinned ✓' : 'Pin to shortlist +';
+  renderPinnedShortlist();
+});
+
+shortlistResults?.addEventListener('click', event => {
+  const button = event.target.closest('[data-pin-candidate]');
+  if (!button) return;
+  const id = button.dataset.pinCandidate;
+  pinnedDiseaseIds.delete(id);
+  const resultButton = diseaseResults.querySelector(`[data-pin-candidate="${CSS.escape(id)}"]`);
+  if (resultButton) {
+    resultButton.setAttribute('aria-pressed', 'false');
+    resultButton.textContent = 'Pin to shortlist +';
+  }
+  renderPinnedShortlist();
 });
 
 profileSelect.addEventListener('change', event => {

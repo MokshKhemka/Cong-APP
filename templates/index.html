@@ -32,7 +32,7 @@
           <i aria-hidden="true"></i>
           Checking datasets…
         </span>
-        <button class="new-case" type="button" data-demo="connective" data-guided-demo>60-sec demo <span aria-hidden="true">↗</span></button>
+        <a class="new-case" href="#analysis">New analysis <span aria-hidden="true">↗</span></a>
       </div>
     </header>
 
@@ -50,8 +50,8 @@
           <h1><span>Connect the</span><span>clinical clues.</span></h1>
           <p class="hero-lede">Notice turns observed findings into a structured phenotype set, compares candidate profiles, and shows the evidence behind every match.</p>
           <div class="hero-actions">
-            <button class="hero-primary" type="button" data-demo="connective" data-guided-demo>Run the 60-sec demo <span aria-hidden="true">↗</span></button>
-            <a class="hero-secondary" href="#analysis">Open workspace <span aria-hidden="true">→</span></a>
+            <a class="hero-primary" href="#analysis">Start an analysis <span aria-hidden="true">↗</span></a>
+            <button class="hero-secondary" type="button" data-demo="connective">Load an example <span aria-hidden="true">→</span></button>
           </div>
           <p class="hero-boundary"><strong>Decision support, not diagnosis.</strong> Results are candidate profiles for a qualified reviewer to investigate.<span class="hero-proofline"><i aria-hidden="true"></i> Local data · no external AI · evidence stays visible</span></p>
         </div>
@@ -91,12 +91,12 @@
     </section>
 
     <section class="feature-overview" aria-labelledby="feature-overview-title">
-      <header><p class="section-label">What Notice can do</p><h2 id="feature-overview-title">Four useful outcomes. No mystery.</h2></header>
+      <header><p class="section-label">The workflow</p><h2 id="feature-overview-title">From a clinical note to a shortlist.</h2></header>
       <div>
         <article><span>01</span><strong>Standardize a note</strong><p>Translate plain-language observations into recognized HPO terms.</p></article>
         <article><span>02</span><strong>Catch extraction mistakes</strong><p>Review and remove incorrect terms before they affect the ranking.</p></article>
         <article><span>03</span><strong>Compare candidate profiles</strong><p>See matches, gaps, conflicts, and weighted similarity side by side.</p></article>
-        <article><span>04</span><strong>Prepare the next conversation</strong><p>Export a brief and generate focused questions for clinical review.</p></article>
+        <article><span>04</span><strong>Take the evidence with you</strong><p>Export a plain-text brief with the case, candidates, and source links.</p></article>
       </div>
     </section>
 
@@ -166,13 +166,6 @@
         </nav>
         <p id="case-status" class="case-status" role="status" aria-live="polite">Your note stays on this computer. Try an example or enter your own findings.</p>
         <div id="demo-confirm" class="demo-confirm" hidden><p>Load this example in place of your current note?</p><button id="demo-replace" type="button">Load example</button><button id="demo-cancel" type="button">Keep my note</button></div>
-        <aside id="guided-demo" class="guided-demo" hidden aria-live="polite">
-          <span class="guided-demo-index" id="guided-demo-index">Demo 1 / 2</span>
-          <div><strong id="guided-demo-title">Notice did the translation.</strong><p id="guided-demo-copy">One plain-language note became a reviewable set of standardized findings.</p></div>
-          <button id="guided-demo-next" class="guided-demo-next" type="button">Continue <span aria-hidden="true">→</span></button>
-          <button id="guided-demo-close" class="guided-demo-close" type="button" aria-label="End guided demo">×</button>
-        </aside>
-
         <section class="workspace" aria-label="Clinical analysis tools" aria-busy="false">
           <article class="panel input-panel wizard-page" data-wizard-page="0">
             <header class="panel-heading">
@@ -183,12 +176,7 @@
               <span class="panel-state">Draft</span>
             </header>
 
-            <div class="entry-guide" aria-label="How to enter a case">
-              <span>Step 1 — do this now</span>
-              <div><b>✓</b><p><strong>Write only what was observed</strong>Use symptoms, measurements, or clinical signs—not a suspected diagnosis.</p></div>
-              <div><b>✓</b><p><strong>Put every observed finding in this one box</strong>For example: “joint pain, skin laxity, and wide-set eyes.”</p></div>
-              <div><b>→</b><p><strong>Then press Continue to review</strong>Notice will translate the note; you will approve the terms on the next screen.</p></div>
-            </div>
+            <p class="input-tip"><b>Start with the findings.</b> Write the signs, symptoms, or measurements you observed. Notice will translate them into HPO terms for you to review.</p>
 
             <div class="field primary-field">
               <div class="label-row">
@@ -404,7 +392,7 @@
           <p class="section-label">04 / More tools</p>
           <h2 id="tools-title">Useful before and after the analysis.</h2>
         </div>
-        <p>Prepare a cleaner note, explore the ontology, build a case, and turn results into useful questions for the next clinical review.</p>
+        <p>Search the ontology, build a case from common findings, or compare the exact candidates you want to investigate.</p>
       </header>
 
       <div class="tool-grid">
@@ -451,19 +439,13 @@
           <button id="builder-use" class="builder-use" type="button" disabled>Send draft to workspace <span aria-hidden="true">↗</span></button>
         </article>
 
-        <article class="tool-card note-check-tool reveal-item">
-          <header><span class="tool-index">03</span><div><p class="section-label">Before analysis</p><h3>Note readiness check</h3></div></header>
-          <p>Check whether a note is specific enough and catch language that belongs in the absent-findings field.</p>
-          <label class="sr-only" for="note-check-text">Clinical note to check</label>
-          <textarea id="note-check-text" maxlength="10000" placeholder="Paste a note, or check the note already in the workspace."></textarea>
-          <div class="note-check-actions">
-            <button id="note-check-run" type="button">Check this note <span aria-hidden="true">→</span></button>
-            <button id="note-check-current" type="button">Use workspace note</button>
+        <article class="tool-card shortlist-tool reveal-item">
+          <header><span class="tool-index">03</span><div><p class="section-label">After analysis</p><h3>Pinned shortlist</h3></div></header>
+          <p>Pin the candidates you actually care about, then compare their matches, gaps, and conflicts side by side.</p>
+          <div class="shortlist-summary"><strong id="shortlist-count">0 pinned</strong><button id="shortlist-clear" type="button" hidden>Clear</button></div>
+          <div id="shortlist-results" class="shortlist-results" aria-live="polite">
+            <div class="shortlist-empty"><b>Nothing pinned yet.</b><span>Run an analysis, open a candidate, and choose “Pin to shortlist.”</span><a href="#analysis">Open the workspace →</a></div>
           </div>
-          <div id="note-check-results" class="note-check-results" aria-live="polite">
-            <p>Checks for multiple specific findings, uncertainty language, and negatives that should be reviewed separately.</p>
-          </div>
-          <button id="note-check-send" class="note-check-send" type="button" disabled>Send checked note to workspace <span aria-hidden="true">↗</span></button>
         </article>
 
         <article class="tool-card toolkit-tool reveal-item">
@@ -474,16 +456,6 @@
             <a href="#analysis" data-results-action="evidence"><b>Inspect scoring evidence</b><span>Review weights, missing findings, and conflicts. ↗</span></a>
             <a href="#analysis" data-results-action="brief"><b>Generate a review brief</b><span>Copy or download an auditable case summary. ↗</span></a>
           </div>
-          <div class="question-builder">
-            <div><strong>Clinician-question builder</strong><span id="question-hint">Run an analysis to unlock focused questions.</span></div>
-            <button id="question-build" type="button" disabled>Build questions <span aria-hidden="true">→</span></button>
-          </div>
-          <div id="question-output" class="question-output" hidden>
-            <ol id="question-list"></ol>
-            <button id="question-copy" type="button">Copy questions</button>
-            <span id="question-status" role="status" aria-live="polite"></span>
-          </div>
-          <button type="button" class="tool-demo" data-demo="neuro">Run the neurological demo <span aria-hidden="true">↗</span></button>
         </article>
       </div>
     </section>
