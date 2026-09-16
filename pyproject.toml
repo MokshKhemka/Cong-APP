@@ -1,6 +1,17 @@
+[project]
+name = "notice-cac"
+version = "0.1.0"
+description = "Local phenotype extraction and explainable disease-profile ranking."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "Flask>=3.0,<4",
+    "RapidFuzz>=3.0,<4",
+]
+
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py312"
 
 [tool.ruff.format]
 line-ending = "lf"
