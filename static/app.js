@@ -645,16 +645,25 @@ profileSelect.addEventListener('change', event => {
 exportButton.addEventListener('click', () => {
   if (!latestAnalysis || !latestInput || isStale) return;
   const data = latestAnalysis;
-  const lines = ['NOTICE — REVIEW BRIEF', new Date().toLocaleString(),
-    'Heuristic phenotype comparison. Not a diagnosis. Scores are similarity values, not probabilities.',
+  const lead = data.diseases[0];
+  const reviewQuestions = lead ? [
+    `Does the clinical picture fit ${lead.name}, including the findings not yet reported here?`,
+    `Would review by ${lead.specialty || 'a genetics professional'} be appropriate?`,
+    'Are the explicitly absent findings confirmed, and do any conflict with the leading profiles?',
+  ] : [];
+  const lines = ['NOTICE — CLINICIAN HANDOFF', new Date().toLocaleString(),
+    'Decision-support summary for qualified clinical review. Not a diagnosis. Scores are similarity values, not probabilities.',
     '', 'CASE NOTE', latestInput.text, '',
     `Explicitly absent: ${latestInput.absent || 'None'}`, `Age: ${latestInput.age || 'Unspecified'}; sex: ${latestInput.sex}; persistent despite treatment: ${latestInput.refractory ? 'Yes' : 'No'}`,
-    '', 'PHENOTYPE SET', ...data.terms.map(t => `${t.name} (${t.id})`), '', 'CANDIDATE PROFILES'];
-  data.diseases.forEach((d, i) => lines.push('', `${i + 1}. ${d.name} (${d.id})`,
+    '', 'STANDARDIZED PHENOTYPE SET', ...data.terms.map(t => `${t.name} (${t.id})`),
+    '', 'QUESTIONS FOR REVIEW', ...reviewQuestions.map((question, index) => `${index + 1}. ${question}`),
+    '', 'CANDIDATE PROFILES'];
+  data.diseases.slice(0, 5).forEach((d, i) => lines.push('', `${i + 1}. ${d.name} (${d.id})`,
     `Weighted similarity score: ${(d.score * 100).toFixed(1)}`, `Matched: ${d.matched_terms.map(t => t.name).join(', ')}`,
     `Unreported (partial list): ${d.missing_term_ids.map(t => t.name).join(', ') || 'None listed'}`,
     `Absent expected findings: ${d.absent_expected.map(t => t.name).join(', ') || 'None'}`,
-    `Flags: ${d.flags.join(', ') || 'None'}`, `Resources: ${d.resources.GARD} | ${d.resources.NORD}`));
+    `Flags: ${d.flags.join(', ') || 'None'}`, `Suggested reviewer: ${d.specialty || 'Clinical genetics'}`,
+    `Resources: ${d.resources.GARD} | ${d.resources.NORD}`));
   document.querySelector('#brief-text').value = lines.join('\n');
   document.querySelector('#brief-status').textContent = '';
   document.querySelector('#brief-dialog').showModal();
@@ -664,7 +673,7 @@ document.querySelector('#brief-copy').addEventListener('click', async () => {
   const brief = document.querySelector('#brief-text');
   try {
     await navigator.clipboard.writeText(brief.value);
-    document.querySelector('#brief-status').textContent = 'Brief copied.';
+    document.querySelector('#brief-status').textContent = 'Handoff copied.';
   } catch {
     brief.focus();
     brief.select();
@@ -675,12 +684,12 @@ document.querySelector('#brief-save').addEventListener('click', () => {
   const url = URL.createObjectURL(new Blob([document.querySelector('#brief-text').value], {type: 'text/plain;charset=utf-8'}));
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'clinical-analysis-review.txt';
+  link.download = 'notice-clinician-handoff.txt';
   document.body.append(link);
   link.click();
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-  document.querySelector('#brief-status').textContent = 'Download requested. If your browser does not save the file, use Copy brief.';
+  document.querySelector('#brief-status').textContent = 'Download requested. If your browser does not save the file, use Copy handoff.';
 });
 
 feedback.addEventListener('click', async event => {

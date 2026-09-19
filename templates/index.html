@@ -13,7 +13,7 @@
   <div class="app-frame">
     <header class="app-header">
       <a class="brand" href="#top" aria-label="Notice home">
-        <span class="brand-mark" aria-hidden="true">N</span>
+        <span class="brand-mark" aria-hidden="true"><img src="{{ url_for('static', filename='logo-mark.svg') }}" alt=""></span>
         <span class="brand-copy">
           <strong>Notice</strong>
           <small>Phenotype decision support</small>
@@ -96,7 +96,7 @@
         <article><span>01</span><strong>Standardize a note</strong><p>Translate plain-language observations into recognized HPO terms.</p></article>
         <article><span>02</span><strong>Catch extraction mistakes</strong><p>Review and remove incorrect terms before they affect the ranking.</p></article>
         <article><span>03</span><strong>Compare candidate profiles</strong><p>See matches, gaps, conflicts, and weighted similarity side by side.</p></article>
-        <article><span>04</span><strong>Take the evidence with you</strong><p>Export a plain-text brief with the case, candidates, and source links.</p></article>
+        <article><span>04</span><strong>Prepare a clinician handoff</strong><p>Export the case, leading candidates, questions to review, and source links.</p></article>
       </div>
     </section>
 
@@ -148,7 +148,7 @@
           <div class="content-actions">
             <span class="privacy-state"><i></i> On-device</span>
             <button id="export-button" class="secondary-button" type="button" hidden>
-              Review brief <span aria-hidden="true">↗</span>
+              Clinician handoff <span aria-hidden="true">↗</span>
             </button>
           </div>
         </header>
@@ -454,7 +454,7 @@
           <div class="toolkit-list">
             <a href="#analysis" data-results-action="compare"><b>Compare the top three</b><span>See which case findings each profile explains. ↗</span></a>
             <a href="#analysis" data-results-action="evidence"><b>Inspect scoring evidence</b><span>Review weights, missing findings, and conflicts. ↗</span></a>
-            <a href="#analysis" data-results-action="brief"><b>Generate a review brief</b><span>Copy or download an auditable case summary. ↗</span></a>
+            <a href="#analysis" data-results-action="brief"><b>Prepare a clinician handoff</b><span>Copy or download a structured summary for a qualified reviewer. ↗</span></a>
           </div>
         </article>
       </div>
@@ -467,10 +467,10 @@
     </footer>
   </div>
   <dialog id="brief-dialog" aria-labelledby="brief-title">
-    <header><div><p class="section-label">Ready for review</p><h2 id="brief-title">Your case brief.</h2></div><button id="brief-close" type="button" aria-label="Close review brief">×</button></header>
-    <p>A snapshot of the analyzed case and its evidence. Copy it or save a text file for your demonstration.</p>
-    <label for="brief-text" class="sr-only">Review brief contents</label><textarea id="brief-text" readonly></textarea>
-    <footer><button id="brief-copy" type="button" class="primary-button">Copy brief</button><button id="brief-save" type="button" class="secondary-button">Download .txt ↓</button></footer>
+    <header><div><p class="section-label">For a qualified reviewer</p><h2 id="brief-title">Clinician handoff.</h2></div><button id="brief-close" type="button" aria-label="Close clinician handoff">×</button></header>
+    <p>A structured summary of the case, standardized findings, candidate profiles, and the evidence still worth reviewing.</p>
+    <label for="brief-text" class="sr-only">Clinician handoff contents</label><textarea id="brief-text" readonly></textarea>
+    <footer><button id="brief-copy" type="button" class="primary-button">Copy handoff</button><button id="brief-save" type="button" class="secondary-button">Download .txt ↓</button></footer>
     <p id="brief-status" role="status" aria-live="polite"></p>
   </dialog>
   <script src="{{ url_for('static', filename='app.js') }}"></script>

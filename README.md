@@ -20,9 +20,11 @@ The fictional examples load directly into the same three-step workflow as any ot
 
 Review the extracted HPO findings and remove incorrect matches to recompute the ranking. **Compare top 3** shows a finding-by-finding matrix and conflicts for the leading profiles. An unlisted annotation does not rule out a disease. Scores are weighted similarity values, not probabilities; weighting can produce values above 100.
 
-**Review brief** opens a plain-text snapshot of the analyzed input, findings, candidates, and research links, with copy and download controls. Copy also provides a fallback for embedded browsers that do not support file downloads. Editing a case marks displayed results as outdated and hides export until a new analysis succeeds. Notes are not saved in browser storage.
+**Clinician handoff** opens a plain-text summary of the analyzed input, standardized findings, candidate profiles, questions for review, suggested specialties, and research links. Copy also provides a fallback for embedded browsers that do not support file downloads. Editing a case marks displayed results as outdated and hides export until a new analysis succeeds. Notes are not saved in browser storage.
 
-The **More tools** section includes an HPO term explorer that can add a result directly to a case, a guided case builder, and a pinned shortlist for comparing selected candidates. The post-analysis shortcuts open the top-three comparison, scoring evidence, or review brief directly.
+The **More tools** section includes an HPO term explorer that can add a result directly to a case, a guided case builder, and a pinned shortlist for comparing selected candidates. The post-analysis shortcuts open the top-three comparison, scoring evidence, or clinician handoff directly.
+
+For the project video, see [DEMO_SCRIPT.md](DEMO_SCRIPT.md). It includes a concise backend explanation and a shot-by-shot demo outline.
 
 The extraction and ranking are heuristic. They are useful for producing a shortlist for review, but they are not a validated diagnostic model.
 
